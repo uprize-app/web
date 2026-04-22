@@ -1,15 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { TopBar } from "./components/TopBar";
-import { Landing } from "./components/Landing";
-import { Dashboard } from "./components/Dashboard";
-import { Studio, type AppStep, type Conditions } from "./components/Studio";
-import { Result } from "./components/Result";
-import { Gallery } from "./components/Gallery";
-import { Pricing } from "./components/Pricing";
-import { LoadingOverlay } from "./components/LoadingOverlay";
-import type { ParcelId, Project } from "./lib/data";
+import { TopBar } from "@/components/TopBar";
+import { Landing } from "@/components/Landing";
+import { Dashboard } from "@/components/Dashboard";
+import { Studio, type AppStep, type Conditions } from "@/components/Studio";
+import { Result } from "@/components/Result";
+import { Gallery } from "@/components/Gallery";
+import { Pricing } from "@/components/Pricing";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
+import type { ParcelId, Project } from "@/lib/data";
 
 type View = "landing" | "dashboard" | "gallery" | "pricing" | "app" | "result";
 
