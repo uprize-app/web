@@ -4,6 +4,27 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Uprize design tokens exposed to Tailwind utilities.
+   Keeps shadcn's own tokens (--accent, --primary, …) untouched. */
+@theme {
+  --color-bg: #ECEAE4;
+  --color-bg-2: #E2DFD8;
+  --color-paper: #F5F3EE;
+  --color-ink: #15140F;
+  --color-ink-2: #2A2823;
+  --color-ink-soft: #6B6860;
+  --color-ink-faint: #7C7868;
+  --color-ink-decorative: #9C988E;
+  --color-brand: #E85420;
+  --color-brand-deep: #C7461A;
+  --color-line: rgba(21,20,15,0.12);
+  --color-line-strong: rgba(21,20,15,0.22);
+
+  --font-display: var(--font-serif), 'Instrument Serif', 'Noto Serif KR', serif;
+  --font-sans: var(--font-grotesk), 'Pretendard Variable', Pretendard, -apple-system, system-ui, sans-serif;
+  --font-mono: var(--font-mono-latin), 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 :root {
   --bg: #ECEAE4;
   --bg-2: #E2DFD8;
@@ -19,9 +40,9 @@
   --brand-deep: #C7461A;
   --accent: oklch(0.97 0 0);
   --accent-deep: #C7461A;
-  --serif: 'Instrument Serif', 'Times New Roman', serif;
-  --sans: 'Space Grotesk', system-ui, sans-serif;
-  --mono: 'JetBrains Mono', monospace;
+  --serif: var(--font-serif), 'Instrument Serif', 'Times New Roman', 'Noto Serif KR', serif;
+  --sans: var(--font-grotesk), 'Space Grotesk', 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --mono: var(--font-mono-latin), 'JetBrains Mono', 'Pretendard Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -60,35 +81,72 @@ html, body {
   color: var(--ink);
   font-family: var(--sans);
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   font-feature-settings: 'ss01', 'cv11';
+  /* Korean-safe text rules: prevent mid-word breaks in 어절, no synthetic italic on Hangul */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-spacing-trim: space-all;
+  font-synthesis: none;
 }
+:lang(ko) em, em:lang(ko) { font-style: normal; }
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 input, textarea { font-family: inherit; }
 a { color: inherit; text-decoration: none; }
 
 /* ============ TOP NAV ============ */
+:root { --topbar-h: 64px; }
+@media (min-width: 900px) { :root { --topbar-h: 72px; } }
+
 .topbar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-  display: grid; grid-template-columns: 1fr auto 1fr;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: grid;
+  grid-template-columns: auto 1fr auto;   /* logo | space | hamburger (default, mobile-first) */
   align-items: center;
-  padding: 18px 28px;
-  background: rgba(236, 234, 228, 0.85);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  padding: 12px 16px;
+  gap: 16px;
+  height: var(--topbar-h);
+  background: var(--bg);
   border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgba(21, 20, 15, 0.03);
   font-size: 13px;
+  container-type: inline-size;
+  container-name: topbar;
 }
-.menu-btn { display: none; }
-@media (max-width: 900px) {
-  .topbar { grid-template-columns: auto 1fr auto; padding: 12px 16px; gap: 10px; }
-  .nav-center { display: none; }
-  .menu-btn { display: inline-flex; }
-  .nav-right .btn-cta { display: none; }
-  .nav-right .notify-btn, .nav-right .avatar-btn { display: none; }
+
+/* Default state (mobile-first): hamburger visible, everything else collapsed.
+   Logo is the only always-on element besides the menu button. */
+.nav-center { display: none; }
+.menu-btn { display: inline-flex; }
+.nav-right .btn-cta,
+.nav-right .notify-btn,
+.nav-right .avatar-btn { display: none; }
+
+/* Expand to full desktop layout ONLY when the topbar itself is wide enough
+   to comfortably fit logo + centered pill + right-side CTA cluster.
+   Measured empirically: ~820px fits without crowding; 900px for breathing room. */
+@container topbar (min-width: 900px) {
+  .topbar {
+    grid-template-columns: 1fr auto 1fr;
+    padding: 18px 28px;
+  }
+  .nav-center { display: flex; }
+  .menu-btn { display: none; }
+  .nav-right .btn-cta { display: inline-flex; }
+  .nav-right .notify-btn,
+  .nav-right .avatar-btn { display: flex; }
 }
-.logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+
+/* Logo is sacred — locks its own width, never wraps, never truncates.
+   The grid `auto` track + intrinsic min-content guarantee the logo always
+   gets exactly the space its content needs, no more, no less. */
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+  min-width: max-content;
+  white-space: nowrap;
+}
 .logo-mark {
   width: 24px; height: 24px;
   background: var(--ink);
@@ -105,7 +163,9 @@ a { color: inherit; text-decoration: none; }
   font-family: var(--sans);
   font-weight: 600; letter-spacing: 0.02em;
   font-size: 17px;
+  white-space: nowrap;
 }
+.logo-mark { flex-shrink: 0; }
 .logo-text sup {
   font-family: var(--mono);
   font-size: 9px;
@@ -116,7 +176,9 @@ a { color: inherit; text-decoration: none; }
   vertical-align: top;
 }
 .nav-center {
-  display: flex; gap: 4px;
+  /* display is controlled by the topbar container-query block above */
+  gap: 4px;
+  flex-wrap: nowrap;
   background: rgba(21,20,15,0.04);
   padding: 4px;
   border-radius: 100px;
@@ -129,6 +191,7 @@ a { color: inherit; text-decoration: none; }
   color: var(--ink-soft);
   transition: all 0.2s;
   min-height: 40px;
+  white-space: nowrap;
 }
 .nav-center button:hover { color: var(--ink); }
 .nav-center button.active {
@@ -483,7 +546,7 @@ a { color: inherit; text-decoration: none; }
   display: flex; justify-content: space-between; align-items: baseline;
   font-size: 12px;
 }
-.stats-row .k { color: var(--ink-soft); font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; }
+.stats-row .k { color: var(--ink-soft); font-size: 12px; letter-spacing: 0; }
 .stats-row .v { font-family: var(--serif); font-size: 22px; }
 
 /* ============ MARQUEE ============ */
@@ -503,7 +566,7 @@ a { color: inherit; text-decoration: none; }
   font-size: clamp(22px, 3vw, 28px);
   color: var(--ink-soft);
 }
-.marquee-track span { display: inline-flex; align-items: center; gap: 64px; font-style: italic; }
+.marquee-track span { display: inline-flex; align-items: center; gap: 64px; }
 .marquee-track span::after {
   content: '✱';
   font-style: normal;
@@ -2114,10 +2177,11 @@ a:focus-visible {
 
 /* ============ MOBILE DRAWER ============ */
 .menu-btn {
+  /* display is controlled by the topbar container-query block above */
   width: 44px; height: 44px;
   border-radius: 50%;
   background: rgba(21,20,15,0.06);
-  display: inline-flex; align-items: center; justify-content: center;
+  align-items: center; justify-content: center;
   transition: background 0.2s;
   cursor: pointer;
   border: none;
@@ -2206,7 +2270,7 @@ a:focus-visible {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  padding: 18px 4px;
+  padding: 14px 4px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   transition: padding 0.2s;
@@ -2215,33 +2279,30 @@ a:focus-visible {
   border-left: none;
   border-right: none;
   border-top: none;
-  min-height: 56px;
+  min-height: 52px;
 }
 .drawer-link:hover { padding-left: 12px; }
 .drawer-link-main {
   font-family: var(--serif);
-  font-size: 30px;
-  line-height: 1;
+  font-size: 22px;
+  line-height: 1.1;
   letter-spacing: -0.01em;
   color: var(--ink);
 }
 .drawer-link-sub {
   display: block;
   grid-column: 1 / 2;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0;
   color: var(--ink-soft);
-  margin-top: 6px;
+  margin-top: 4px;
 }
 .drawer-link-arrow {
   grid-row: 1 / 3;
   grid-column: 2 / 3;
   font-family: var(--serif);
-  font-size: 20px;
+  font-size: 16px;
   color: var(--ink-faint);
-  font-style: italic;
   transition: transform 0.2s, color 0.2s;
   align-self: center;
 }
@@ -2281,24 +2342,23 @@ a:focus-visible {
 .drawer-row-name {
   display: block;
   font-family: var(--serif);
-  font-size: 17px;
-  line-height: 1.1;
+  font-size: 15px;
+  line-height: 1.2;
   color: var(--ink);
 }
 .drawer-row-sub {
   display: block;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-size: 11px;
+  letter-spacing: 0;
   color: var(--ink-soft);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .drawer-cta {
   background: var(--ink);
   color: var(--paper);
-  padding: 16px 22px;
+  padding: 14px 20px;
   border-radius: 100px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   display: flex;
   justify-content: space-between;
@@ -2306,7 +2366,7 @@ a:focus-visible {
   transition: background 0.2s;
   cursor: pointer;
   border: none;
-  min-height: 52px;
+  min-height: 48px;
 }
 .drawer-cta:hover { background: var(--brand); }
 
@@ -2395,10 +2455,28 @@ a:focus-visible {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
   }
 }
+
+/* ============ HANGUL LABEL NORMALIZATION ============
+   These label classes were designed with Latin-only typographic
+   tricks (uppercase + wide letter-spacing) but hold Korean content
+   across every page. Strip the Latin-only treatment so Hangul
+   glyphs render at their natural rhythm. */
+.stats-label,
+.label-meta,
+.dash-meta,
+.bento-meta,
+.result-meta,
+.field-lbl,
+.info-card .k,
+.gal-h-meta,
+.pr-h-meta,
+.loading-meta,
+.faq-q {
+  text-transform: none;
+  letter-spacing: 0;
+}
+

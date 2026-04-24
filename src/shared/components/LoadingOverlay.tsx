@@ -10,12 +10,12 @@ const STEPS: Step[] = [
   { label: "품질 검증", pct: 100 },
 ];
 
-type Props = {
+type LoadingOverlayProps = {
   show: boolean;
   progress: number;
 };
 
-export function LoadingOverlay({ show, progress }: Props) {
+export const LoadingOverlay = ({ show, progress }: LoadingOverlayProps) => {
   const currentStep = STEPS.find((s) => progress < s.pct)?.label ?? "완료";
 
   return (
@@ -51,7 +51,7 @@ export function LoadingOverlay({ show, progress }: Props) {
             const active = !done && (i === 0 || progress >= STEPS[i - 1].pct);
             return (
               <div
-                key={i}
+                key={s.label}
                 className={`loading-step ${active ? "active" : ""} ${done ? "done" : ""}`}
               >
                 <div className="marker" aria-hidden="true" />
@@ -65,4 +65,4 @@ export function LoadingOverlay({ show, progress }: Props) {
       </div>
     </div>
   );
-}
+};
