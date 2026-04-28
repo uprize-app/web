@@ -1,53 +1,45 @@
-import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+import type { Metadata } from "next";
+import { Inter, Instrument_Serif, Noto_Sans_KR } from "next/font/google";
+
+import { Nav } from "@/components/layout/Nav";
+
 import "./globals.css";
 
-import type { Metadata } from "next";
-import { Instrument_Serif, JetBrains_Mono, Space_Grotesk } from "next/font/google";
-import { QueryProvider } from "@/shared/providers/QueryProvider";
-import { TopBar } from "@/shared/components/TopBar";
-
-const spaceGrotesk = Space_Grotesk({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-grotesk",
   display: "swap",
+  variable: "--font-inter",
 });
 
-const instrumentSerif = Instrument_Serif({
+const instrument = Instrument_Serif({
   subsets: ["latin"],
   weight: "400",
   style: ["normal", "italic"],
-  variable: "--font-serif",
   display: "swap",
+  variable: "--font-instrument",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const noto = Noto_Sans_KR({
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
-  variable: "--font-mono-latin",
+  weight: ["300", "400", "500", "700"],
   display: "swap",
+  variable: "--font-noto",
 });
 
 export const metadata: Metadata = {
-  title: "UPRIZE — Architecture, generated.",
+  title: "Uprize — Build Before You Build",
   description:
-    "시행사를 위한 건축 스튜디오. 지도에서 필지를 찍으면 용도·층수·스타일에 맞춰 외관을 90초 안에 그려 드립니다.",
+    "시행사 대표가 건축사무소 가기 전, AI로 필지 위에 건물을 먼저 올려보는 서비스",
 };
 
-type RootLayoutProps = {
-  children: React.ReactNode;
-};
-
-const RootLayout = ({ children }: RootLayoutProps) => (
+const RootLayout = ({ children }: { children: React.ReactNode }) => (
   <html
     lang="ko"
-    className={`${spaceGrotesk.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}
+    className={`${inter.variable} ${instrument.variable} ${noto.variable}`}
   >
-    <body suppressHydrationWarning>
-      <QueryProvider>
-        <TopBar />
-        {children}
-      </QueryProvider>
+    <body className="min-h-dvh animate-page-in">
+      <Nav />
+      {children}
     </body>
   </html>
 );

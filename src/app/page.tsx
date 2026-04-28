@@ -1,22 +1,23 @@
-"use client";
+import { Footer } from "@/components/layout/Footer";
+import { FinalCTA } from "@/features/landing/components/FinalCTA";
+import { Hero } from "@/features/landing/components/Hero";
+import { HowItWorks } from "@/features/landing/components/HowItWorks";
+import { MarqueeStrip } from "@/features/landing/components/MarqueeStrip";
+import { StylesShowcase } from "@/features/landing/components/StylesShowcase";
+import { UseCases } from "@/features/landing/components/UseCases";
+import { ValueProp } from "@/features/landing/components/ValueProp";
 
-import { useRouter } from "next/navigation";
-import { Landing } from "@/components/Landing";
+const LandingPage = () => (
+  <>
+    <Hero />
+    <MarqueeStrip />
+    <ValueProp />
+    <HowItWorks />
+    <StylesShowcase />
+    <UseCases />
+    <FinalCTA />
+    <Footer />
+  </>
+);
 
-const LANDING_ROUTE_MAP = {
-  app: "/studio/new",
-  gallery: "/gallery",
-  result: "/dashboard",
-} as const;
-
-const HomePage = () => {
-  const router = useRouter();
-
-  const handleGoto = (v: keyof typeof LANDING_ROUTE_MAP) => {
-    router.push(LANDING_ROUTE_MAP[v]);
-  };
-
-  return <Landing goto={handleGoto} />;
-};
-
-export default HomePage;
+export default LandingPage;

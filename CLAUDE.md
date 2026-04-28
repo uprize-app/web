@@ -13,7 +13,7 @@
 
 ## Project info
 
-- 레포 구성: `uprize-frontend` (이 레포) + `uprize-backend` (Express, 별도 레포)
+- 레포 구성: `uprize-web` (이 레포) + `uprize-backend` (Express, 별도 레포)
 - API Base URL: [FILL — 예: https://uprize-api.onrender.com]
 - Auth: Supabase 카카오 OAuth → Session JWT → `Authorization: Bearer ...`
 - DB: Supabase (PostgreSQL) · Storage는 업로드/생성 이미지용

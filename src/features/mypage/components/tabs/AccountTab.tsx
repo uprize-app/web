@@ -1,0 +1,145 @@
+"use client";
+
+import { useState } from "react";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+import { Panel } from "../Panel";
+import { SectionHeader } from "../SectionHeader";
+
+type Toggle = { id: string; name: string; desc: string; defaultOn: boolean };
+
+const NOTIFICATIONS: ReadonlyArray<Toggle> = [
+  { id: "n1", name: "프로젝트 생성 완료", desc: "렌더링이 완료되면 이메일 발송", defaultOn: true },
+  { id: "n2", name: "결제 알림",          desc: "결제 7일 전 미리 알림",         defaultOn: true },
+  { id: "n3", name: "주간 사용량 리포트", desc: "월요일 오전 9시 정기 발송",     defaultOn: false },
+  { id: "n4", name: "신규 스타일 출시",   desc: "프리미엄 스타일 추가시 안내",    defaultOn: true },
+];
+
+const SECURITY: ReadonlyArray<Toggle> = [
+  { id: "s1", name: "2단계 인증 (2FA)", desc: "SMS 또는 앱으로 본인 확인",      defaultOn: true },
+  { id: "s2", name: "로그인 알림",      desc: "새 기기 접속시 이메일 발송",     defaultOn: true },
+];
+
+export const AccountTab = () => {
+  const [toggles, setToggles] = useState<Record<string, boolean>>(() => {
+    const init: Record<string, boolean> = {};
+    [...NOTIFICATIONS, ...SECURITY].forEach((t) => (init[t.id] = t.defaultOn));
+    return init;
+  });
+
+  return (
+    <div>
+      <SectionHeader
+        title={<>계정 <em className="not-italic display-italic text-burn-500">설정.</em></>}
+        sub="개인 정보 · 알림 · 보안"
+      />
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Panel title="프로필">
+          <Field label="이름" defaultValue="박상호" />
+          <Field label="직책" defaultValue="대표" />
+          <Field label="회사" defaultValue="한울개발 (주)" />
+          <Field label="이메일" defaultValue="sangho@hanwool.kr" />
+          <Field label="휴대폰" defaultValue="010-2204-8127" />
+          <Button variant="accent" size="sm">변경 사항 저장</Button>
+        </Panel>
+
+        <div className="flex flex-col gap-5">
+          <Panel title="알림">
+            {NOTIFICATIONS.map((t, i) => (
+              <ToggleRow
+                key={t.id}
+                t={t}
+                on={toggles[t.id]!}
+                onChange={(v) => setToggles((s) => ({ ...s, [t.id]: v }))}
+                last={i === NOTIFICATIONS.length - 1}
+              />
+            ))}
+          </Panel>
+
+          <Panel title="보안">
+            {SECURITY.map((t, i) => (
+              <ToggleRow
+                key={t.id}
+                t={t}
+                on={toggles[t.id]!}
+                onChange={(v) => setToggles((s) => ({ ...s, [t.id]: v }))}
+                last={i === SECURITY.length - 1}
+              />
+            ))}
+            <Button variant="ghost" size="sm" className="mt-4">
+              비밀번호 변경
+            </Button>
+          </Panel>
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-md border border-[#E5C2C0] bg-[#FBF4F3] px-7 py-6">
+        <h4 className="display-italic m-0 mb-1.5 text-xl text-[#8A2F2A] not-italic">
+          계정 삭제
+        </h4>
+        <p className="m-0 mb-3.5 text-[13px] text-ink-50">
+          모든 프로젝트와 렌더링 자료가 영구히 삭제됩니다. 30일간 복구 가능합니다.
+        </p>
+        <button
+          type="button"
+          className="rounded-sm border border-[#C9554F] bg-transparent px-4 py-2 text-[13px] text-[#8A2F2A] transition hover:bg-[#C9554F] hover:text-paper"
+        >
+          계정 삭제 요청
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const Field = ({ label, defaultValue }: { label: string; defaultValue: string }) => (
+  <div className="mb-[18px] flex flex-col gap-2">
+    <label className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-50">
+      {label}
+    </label>
+    <Input defaultValue={defaultValue} />
+  </div>
+);
+
+const ToggleRow = ({
+  t,
+  on,
+  onChange,
+  last,
+}: {
+  t: Toggle;
+  on: boolean;
+  onChange: (v: boolean) => void;
+  last: boolean;
+}) => (
+  <div
+    className={cn(
+      "flex items-center justify-between py-4",
+      !last && "border-b border-line",
+    )}
+  >
+    <div>
+      <div className="mb-1 text-sm font-medium">{t.name}</div>
+      <div className="text-xs text-ink-50">{t.desc}</div>
+    </div>
+    <button
+      type="button"
+      onClick={() => onChange(!on)}
+      aria-pressed={on}
+      className={cn(
+        "relative h-[22px] w-10 shrink-0 rounded-full transition-colors duration-300",
+        on ? "bg-ink" : "bg-paper-2",
+      )}
+    >
+      <span
+        className={cn(
+          "absolute top-0.5 h-[18px] w-[18px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-all duration-300",
+          on ? "left-[20px]" : "left-0.5",
+        )}
+      />
+    </button>
+  </div>
+);
