@@ -6,20 +6,21 @@ import { cn } from "@/lib/utils";
 
 import type { ProjectFilter } from "../types/project.types";
 
-type FilterOption = { id: ProjectFilter; label: string; count: number };
+const FILTER_LABEL: Record<ProjectFilter, string> = {
+  all: "전체",
+  work: "생성중",
+  done: "완료",
+  draft: "초안",
+};
 
-const FILTERS: FilterOption[] = [
-  { id: "all",   label: "전체",   count: 12 },
-  { id: "work",  label: "생성중", count: 2 },
-  { id: "done",  label: "완료",   count: 8 },
-  { id: "draft", label: "초안",   count: 2 },
-];
+const FILTER_ORDER: ReadonlyArray<ProjectFilter> = ["all", "work", "done", "draft"];
 
 type Props = {
   filter: ProjectFilter;
   onFilterChange: (filter: ProjectFilter) => void;
   search: string;
   onSearchChange: (q: string) => void;
+  counts: Record<ProjectFilter, number>;
 };
 
 export const ProjectsToolbar = ({
@@ -27,32 +28,31 @@ export const ProjectsToolbar = ({
   onFilterChange,
   search,
   onSearchChange,
+  counts,
 }: Props) => (
   <section className="sticky top-[72px] z-[5] border-b border-line bg-paper/90 py-7 backdrop-blur-md">
     <div className="mx-auto flex max-w-[1280px] flex-col gap-6 px-8 md:flex-row md:items-center md:justify-between">
       <div className="flex gap-1 rounded-full bg-paper-2 p-1">
-        {FILTERS.map((f) => {
-          const active = filter === f.id;
+        {FILTER_ORDER.map((id) => {
+          const active = filter === id;
           return (
             <button
-              key={f.id}
+              key={id}
               type="button"
-              onClick={() => onFilterChange(f.id)}
+              onClick={() => onFilterChange(id)}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium transition-all duration-300 ease-out-expo",
-                active
-                  ? "bg-ink text-paper"
-                  : "text-ink-50 hover:text-ink",
+                active ? "bg-ink text-paper" : "text-ink-50 hover:text-ink",
               )}
             >
-              {f.label}
+              {FILTER_LABEL[id]}
               <span
                 className={cn(
                   "font-mono text-[10px]",
                   active ? "text-burn-300" : "text-ink-30",
                 )}
               >
-                {f.count}
+                {counts[id]}
               </span>
             </button>
           );

@@ -39,7 +39,7 @@ export const WizardFooter = ({ step, onPrev, onNext }: Props) => {
       <Button type="button" variant="accent" size="sm" onClick={onNext}>
         {isLast ? (
           <>
-            프로젝트 저장
+            완료 · 프로젝트 보기
             <Check className="h-3.5 w-3.5" strokeWidth={1.6} />
           </>
         ) : (

@@ -4,22 +4,20 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 import type {
-  BackgroundId,
   DesignStyleId,
   LotSummary,
+  SelectedBackground,
   SiteInfoForm,
   WizardDraft,
   WizardStepId,
 } from "../types/wizard.types";
-
-import { MOCK_LOT } from "../constants/mockLot";
 
 type WizardActions = {
   setStep: (step: WizardStepId) => void;
   goNext: () => void;
   goPrev: () => void;
   setLot: (lot: LotSummary) => void;
-  setBackground: (id: BackgroundId) => void;
+  setBackground: (background: SelectedBackground | null) => void;
   setSiteInfo: (patch: Partial<SiteInfoForm>) => void;
   setDesignStyle: (id: DesignStyleId) => void;
   setProjectName: (name: string) => void;
@@ -28,21 +26,24 @@ type WizardActions = {
 
 type WizardState = WizardDraft & WizardActions;
 
+/** 기본 사이트 정보 — 모든 값은 사용자 입력으로 채워짐 */
+const initialSiteInfo: SiteInfoForm = {
+  areaSqm: 0,
+  zoning: "",
+  bcr: 0,
+  far: 0,
+  floorsAbove: 0,
+  floorsBelow: 0,
+  use: "hotel",
+};
+
 const initialDraft: WizardDraft = {
   step: 1,
-  lot: MOCK_LOT, // 데모: 처음부터 역삼동 선택돼 있는 상태로 시작
-  background: "city",
-  siteInfo: {
-    areaSqm: MOCK_LOT.areaSqm,
-    zoning: "일반상업지역",
-    bcr: MOCK_LOT.bcrLimit,
-    far: MOCK_LOT.farLimit,
-    floorsAbove: 18,
-    floorsBelow: 3,
-    use: "hotel",
-  },
-  designStyle: "iconic",
-  projectName: "역삼 Aurora",
+  lot: null,
+  background: null,
+  siteInfo: initialSiteInfo,
+  designStyle: null,
+  projectName: "",
 };
 
 const clamp = (n: number): WizardStepId =>
@@ -69,7 +70,11 @@ export const useWizardDraftStore = create<WizardState>()(
     {
       name: "uprize:wizard-draft",
       storage: createJSONStorage(() => localStorage),
-      // 새 세션에서 step 은 항상 1 부터 — URL ?step=N 이 우선
+      version: 4, // v4: prefill mock 데이터 제거 — 모든 초기값을 빈 상태로
+      migrate: (_persisted, version) => {
+        if (version < 4) return initialDraft as unknown as WizardState;
+        return _persisted as WizardState;
+      },
       partialize: ({ step: _step, ...rest }) => rest as WizardState,
     },
   ),

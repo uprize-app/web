@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useWizardDraftStore } from "../stores/wizardDraft.store";
@@ -24,7 +24,9 @@ const parseStepFromUrl = (raw: string | null): WizardStepId => {
 export const NewProjectWizard = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { step, setStep, goNext, goPrev } = useWizardDraftStore();
+  const draft = useWizardDraftStore();
+  const { step, setStep, goNext, goPrev } = draft;
+  const [submitError] = useState<string | null>(null);
 
   // URL ?step=N 을 단일 source-of-truth 로 동기화 (뒤로가기/공유 지원)
   useEffect(() => {
@@ -47,6 +49,8 @@ export const NewProjectWizard = () => {
 
   const handleNext = () => {
     if (step >= 5) {
+      // Step 5 자체 "AI 생성 시작" 버튼이 저장 + 생성을 처리.
+      // footer 는 단순 종료 = 프로젝트 리스트로 이동.
       router.push("/projects");
       return;
     }
@@ -74,6 +78,12 @@ export const NewProjectWizard = () => {
           {step === 4 ? <Step4Style /> : null}
           {step === 5 ? <Step5Result /> : null}
         </div>
+
+        {submitError ? (
+          <div className="mt-6 rounded-md border border-burn-200 bg-burn-50 px-4 py-2.5 text-[13px] text-burn-700">
+            {submitError}
+          </div>
+        ) : null}
 
         <WizardFooter step={step} onPrev={handlePrev} onNext={handleNext} />
       </main>

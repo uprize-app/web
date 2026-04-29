@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+import { useMe, useUpdateMe } from "@/features/me/hooks/useMe.query";
 
 import { Panel } from "../Panel";
 import { SectionHeader } from "../SectionHeader";
@@ -38,14 +40,7 @@ export const AccountTab = () => {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Panel title="프로필">
-          <Field label="이름" defaultValue="박상호" />
-          <Field label="직책" defaultValue="대표" />
-          <Field label="회사" defaultValue="한울개발 (주)" />
-          <Field label="이메일" defaultValue="sangho@hanwool.kr" />
-          <Field label="휴대폰" defaultValue="010-2204-8127" />
-          <Button variant="accent" size="sm">변경 사항 저장</Button>
-        </Panel>
+        <ProfilePanel />
 
         <div className="flex flex-col gap-5">
           <Panel title="알림">
@@ -95,12 +90,91 @@ export const AccountTab = () => {
   );
 };
 
-const Field = ({ label, defaultValue }: { label: string; defaultValue: string }) => (
+const ProfilePanel = () => {
+  const { data: me, isLoading } = useMe();
+  const updateMe = useUpdateMe();
+
+  const [displayName, setDisplayName] = useState("");
+  const [position, setPosition] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [savedToast, setSavedToast] = useState<"saved" | "error" | null>(null);
+
+  // 서버 데이터 도착 시 폼에 반영
+  useEffect(() => {
+    if (me) {
+      setDisplayName(me.displayName ?? "");
+      setPosition(me.position ?? "");
+      setCompanyName(me.companyName ?? "");
+    }
+  }, [me]);
+
+  const handleSave = () => {
+    setSavedToast(null);
+    updateMe.mutate(
+      {
+        displayName: displayName.trim() || undefined,
+        position: position.trim() || undefined,
+        companyName: companyName.trim() || undefined,
+      },
+      {
+        onSuccess: () => setSavedToast("saved"),
+        onError: () => setSavedToast("error"),
+      },
+    );
+  };
+
+  return (
+    <Panel title="프로필">
+      <Field label="이름" value={displayName} onChange={setDisplayName} />
+      <Field label="직책" value={position} onChange={setPosition} />
+      <Field label="회사" value={companyName} onChange={setCompanyName} />
+      <Field label="이메일" value={me?.email ?? ""} disabled />
+
+      <div className="flex items-center gap-3">
+        <Button
+          variant="accent"
+          size="sm"
+          onClick={handleSave}
+          disabled={updateMe.isPending || isLoading}
+        >
+          {updateMe.isPending ? "저장 중…" : "변경 사항 저장"}
+        </Button>
+        {savedToast === "saved" ? (
+          <span className="font-mono text-[11px] tracking-[0.04em] text-[#4F8A6E]">
+            ✓ 저장됨
+          </span>
+        ) : null}
+        {savedToast === "error" ? (
+          <span className="font-mono text-[11px] tracking-[0.04em] text-burn-500">
+            저장 실패: {updateMe.error?.message ?? "알 수 없는 오류"}
+          </span>
+        ) : null}
+      </div>
+    </Panel>
+  );
+};
+
+const Field = ({
+  label,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  value: string;
+  onChange?: (v: string) => void;
+  disabled?: boolean;
+}) => (
   <div className="mb-[18px] flex flex-col gap-2">
     <label className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-50">
       {label}
     </label>
-    <Input defaultValue={defaultValue} />
+    <Input
+      value={value}
+      onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+      disabled={disabled}
+      readOnly={!onChange}
+    />
   </div>
 );
 

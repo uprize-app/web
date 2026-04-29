@@ -3,7 +3,6 @@
 import { cn } from "@/lib/utils";
 
 import { STEPS } from "../constants/steps";
-import { BACKGROUND_BY_ID } from "../constants/backgrounds";
 import { DESIGN_STYLE_BY_ID } from "../constants/designStyles";
 import { BUILDING_USE_LABEL } from "../constants/buildingUse";
 import { formatArea } from "../lib/format";
@@ -26,7 +25,7 @@ export const WizardSidebar = ({ step, onStepChange }: Props) => {
     { label: "필지", value: step >= 1 ? lot?.jibun : null },
     {
       label: "배경",
-      value: step >= 2 && background ? BACKGROUND_BY_ID.get(background)?.name : null,
+      value: step >= 2 && background ? background.name : null,
     },
     {
       label: "대지면적",

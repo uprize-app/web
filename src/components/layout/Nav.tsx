@@ -7,16 +7,31 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
 import { cn } from "@/lib/utils";
+import { useMe } from "@/features/me/hooks/useMe.query";
 
 const links = [
   { href: "/projects", label: "프로젝트" },
   { href: "/mypage", label: "마이페이지" },
 ];
 
+/** 표시용 유저명 — null fallback 일관성 */
+const formatUserDisplay = (
+  displayName: string | null,
+  position: string | null,
+  email: string | null,
+) => {
+  const name = displayName ?? email?.split("@")[0] ?? "사용자";
+  return position ? `${name} ${position}` : name;
+};
+
+const initialFor = (displayName: string | null, email: string | null) =>
+  (displayName ?? email ?? "U")[0]!.toUpperCase();
+
 export const Nav = () => {
   const pathname = usePathname();
   const isWizard = pathname.startsWith("/studio");
   const isLanding = pathname === "/";
+  const { data: me } = useMe();
 
   return (
     <nav className="sticky top-0 z-50 border-b border-line bg-paper/80 backdrop-blur-xl">
@@ -80,9 +95,13 @@ export const Nav = () => {
               className="inline-flex items-center gap-2 text-sm font-medium text-ink-50 transition hover:text-ink"
             >
               <span className="grid h-7 w-7 place-items-center rounded-full bg-ink text-paper">
-                <span className="display-italic text-[13px]">P</span>
+                <span className="display-italic text-[13px]">
+                  {initialFor(me?.displayName ?? null, me?.email ?? null)}
+                </span>
               </span>
-              박상호 대표
+              {me
+                ? formatUserDisplay(me.displayName, me.position, me.email)
+                : "프로필 불러오는 중…"}
             </Link>
           )}
         </div>

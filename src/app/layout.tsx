@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Instrument_Serif, Noto_Sans_KR } from "next/font/google";
 
 import { Nav } from "@/components/layout/Nav";
+import { QueryProvider } from "@/shared/providers/QueryProvider";
 
 import "./globals.css";
 
@@ -38,8 +39,10 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
     className={`${inter.variable} ${instrument.variable} ${noto.variable}`}
   >
     <body className="min-h-dvh animate-page-in">
-      <Nav />
-      {children}
+      <QueryProvider>
+        <Nav />
+        {children}
+      </QueryProvider>
     </body>
   </html>
 );
