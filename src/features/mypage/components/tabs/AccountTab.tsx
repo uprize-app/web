@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { useMe, useUpdateMe } from "@/features/me/hooks/useMe.query";
+import { getSupabaseBrowser } from "@/shared/lib/supabase/client";
 
 import { Panel } from "../Panel";
 import { SectionHeader } from "../SectionHeader";
@@ -72,6 +74,8 @@ export const AccountTab = () => {
         </div>
       </div>
 
+      <SignOutPanel />
+
       <div className="mt-8 rounded-md border border-[#E5C2C0] bg-[#FBF4F3] px-7 py-6">
         <h4 className="display-italic m-0 mb-1.5 text-xl text-[#8A2F2A] not-italic">
           계정 삭제
@@ -86,6 +90,42 @@ export const AccountTab = () => {
           계정 삭제 요청
         </button>
       </div>
+    </div>
+  );
+};
+
+const SignOutPanel = () => {
+  const router = useRouter();
+  const useDevAuth = process.env.NEXT_PUBLIC_USE_DEV_AUTH === "true";
+  const [pending, setPending] = useState(false);
+
+  if (useDevAuth) return null;
+
+  const handleSignOut = async () => {
+    setPending(true);
+    await getSupabaseBrowser().auth.signOut();
+    router.push("/");
+    router.refresh();
+  };
+
+  return (
+    <div className="mt-8 flex items-center justify-between rounded-md border border-line bg-paper px-7 py-6">
+      <div>
+        <h4 className="display-italic m-0 mb-1.5 text-xl text-ink not-italic">
+          로그아웃
+        </h4>
+        <p className="m-0 text-[13px] text-ink-50">
+          현재 기기에서 세션을 종료합니다.
+        </p>
+      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleSignOut}
+        disabled={pending}
+      >
+        {pending ? "로그아웃 중…" : "로그아웃"}
+      </Button>
     </div>
   );
 };
