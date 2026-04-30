@@ -86,24 +86,7 @@ export const Nav = () => {
                 임시저장
               </Button>
             </>
-          ) : isLanding ? (
-            <>
-              {!isAuthed && !sessionLoading ? (
-                <Link
-                  href="/login"
-                  className="hidden text-sm font-medium text-ink-50 transition hover:text-ink md:inline"
-                >
-                  로그인
-                </Link>
-              ) : null}
-              <Button asChild size="sm">
-                <Link href={isAuthed ? "/studio/new" : "/login?next=/studio/new"}>
-                  시작하기
-                  <ArrowRight size={14} strokeWidth={1.5} />
-                </Link>
-              </Button>
-            </>
-          ) : isAuthed ? (
+          ) : sessionLoading ? null : isAuthed ? (
             <>
               <Link
                 href="/mypage"
@@ -118,6 +101,14 @@ export const Nav = () => {
                   ? formatUserDisplay(me.displayName, me.position, me.email)
                   : "프로필 불러오는 중…"}
               </Link>
+              {isLanding ? (
+                <Button asChild size="sm">
+                  <Link href="/studio/new">
+                    시작하기
+                    <ArrowRight size={14} strokeWidth={1.5} />
+                  </Link>
+                </Button>
+              ) : null}
               {!useDevAuth ? (
                 <button
                   type="button"
@@ -129,12 +120,20 @@ export const Nav = () => {
               ) : null}
             </>
           ) : (
-            <Link
-              href="/login"
-              className="text-sm font-medium text-ink-50 transition hover:text-ink"
-            >
-              로그인
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className="text-sm font-medium text-ink-50 transition hover:text-ink"
+              >
+                로그인
+              </Link>
+              <Button asChild size="sm">
+                <Link href="/login?next=/studio/new">
+                  시작하기
+                  <ArrowRight size={14} strokeWidth={1.5} />
+                </Link>
+              </Button>
+            </>
           )}
         </div>
       </div>

@@ -1,9 +1,5 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-
 import { HeroBuildingSvg } from "./HeroBuildingSvg";
+import { StartCtaButton } from "./StartCtaButton";
 
 export const Hero = () => (
   <section className="relative flex min-h-[calc(100vh-72px)] items-center overflow-hidden bg-paper py-20 before:pointer-events-none before:absolute before:inset-0 before:bg-[linear-gradient(rgba(14,14,12,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(14,14,12,0.03)_1px,transparent_1px)] before:bg-[length:64px_64px] before:[mask-image:radial-gradient(ellipse_80%_70%_at_50%_50%,black_30%,transparent_90%)] before:[-webkit-mask-image:radial-gradient(ellipse_80%_70%_at_50%_50%,black_30%,transparent_90%)]">
@@ -30,12 +26,7 @@ export const Hero = () => (
         </p>
 
         <div className="flex flex-wrap items-center gap-8">
-          <Button asChild variant="accent" size="lg">
-            <Link href="/studio/new">
-              무료로 시작하기
-              <ArrowRight size={16} strokeWidth={1.6} />
-            </Link>
-          </Button>
+          <StartCtaButton />
           <div className="flex items-center gap-2.5 text-[13px] text-ink-50">
             <span className="h-1.5 w-1.5 animate-[blink_1.8s_ease-in-out_infinite] rounded-full bg-[#4F8A6E]" />
             10분 만에 사업 제안용 건물 이미지 + 설계안 완성

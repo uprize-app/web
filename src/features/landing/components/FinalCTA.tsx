@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { StartCtaButton } from "./StartCtaButton";
 
 export const FinalCTA = () => (
   <section className="relative overflow-hidden bg-paper py-40 text-center before:pointer-events-none before:absolute before:left-1/2 before:top-1/2 before:h-[120%] before:w-[120%] before:-translate-x-1/2 before:-translate-y-1/2 before:bg-[radial-gradient(ellipse_at_center,#FBEFE5,transparent_50%)]">
@@ -19,12 +18,7 @@ export const FinalCTA = () => (
         별도 설치 없이 브라우저에서 바로 사용 가능 · 첫 프로젝트는 무료
       </p>
       <div className="inline-flex items-center gap-5">
-        <Button asChild variant="accent" size="lg">
-          <Link href="/studio/new">
-            무료로 시작하기
-            <ArrowRight size={16} strokeWidth={1.6} />
-          </Link>
-        </Button>
+        <StartCtaButton />
         <Link
           href="/projects"
           className="border-b border-ink pb-0.5 text-sm font-medium text-ink transition hover:border-burn-500 hover:text-burn-500"
