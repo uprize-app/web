@@ -134,6 +134,7 @@ const ProfilePanel = () => {
   const { data: me, isLoading } = useMe();
   const updateMe = useUpdateMe();
 
+  const [isEditing, setIsEditing] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [position, setPosition] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -148,6 +149,28 @@ const ProfilePanel = () => {
     }
   }, [me]);
 
+  const initial = (
+    me?.displayName ??
+    me?.email ??
+    "U"
+  )[0]!.toUpperCase();
+  const fallbackName = me?.email?.split("@")[0] ?? "사용자";
+
+  const handleEdit = () => {
+    setSavedToast(null);
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    if (me) {
+      setDisplayName(me.displayName ?? "");
+      setPosition(me.position ?? "");
+      setCompanyName(me.companyName ?? "");
+    }
+    setSavedToast(null);
+    setIsEditing(false);
+  };
+
   const handleSave = () => {
     setSavedToast(null);
     updateMe.mutate(
@@ -157,64 +180,137 @@ const ProfilePanel = () => {
         companyName: companyName.trim() || undefined,
       },
       {
-        onSuccess: () => setSavedToast("saved"),
+        onSuccess: () => {
+          setSavedToast("saved");
+          setIsEditing(false);
+        },
         onError: () => setSavedToast("error"),
       },
     );
   };
 
   return (
-    <Panel title="프로필">
-      <Field label="이름" value={displayName} onChange={setDisplayName} />
-      <Field label="직책" value={position} onChange={setPosition} />
-      <Field label="회사" value={companyName} onChange={setCompanyName} />
-      <Field label="이메일" value={me?.email ?? ""} disabled />
-
-      <div className="flex items-center gap-3">
-        <Button
-          variant="accent"
-          size="sm"
-          onClick={handleSave}
-          disabled={updateMe.isPending || isLoading}
-        >
-          {updateMe.isPending ? "저장 중…" : "변경 사항 저장"}
-        </Button>
-        {savedToast === "saved" ? (
-          <span className="font-mono text-[11px] tracking-[0.04em] text-[#4F8A6E]">
-            ✓ 저장됨
-          </span>
-        ) : null}
-        {savedToast === "error" ? (
-          <span className="font-mono text-[11px] tracking-[0.04em] text-burn-500">
-            저장 실패: {updateMe.error?.message ?? "알 수 없는 오류"}
-          </span>
-        ) : null}
+    <Panel
+      title="프로필"
+      action={
+        !isEditing ? (
+          <button
+            type="button"
+            onClick={handleEdit}
+            disabled={isLoading}
+            className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-50 transition-colors hover:text-burn-500 disabled:opacity-50"
+          >
+            수정 →
+          </button>
+        ) : null
+      }
+    >
+      {/* 프로필 카드 헤더 */}
+      <div className="mb-7 flex items-center gap-5 rounded-md border border-line bg-paper-2/40 px-5 py-5">
+        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-ink text-burn-300">
+          <span className="display-italic text-[28px] not-italic">{initial}</span>
+        </div>
+        <div className="min-w-0">
+          <div className="display-italic mb-1 truncate text-[24px] leading-none not-italic">
+            {isLoading ? "···" : (me?.displayName ?? fallbackName)}
+            {me?.position ? (
+              <em className="not-italic display-italic ml-1.5 text-burn-500">
+                {me.position}.
+              </em>
+            ) : null}
+          </div>
+          <div className="truncate font-mono text-[12px] tracking-[0.04em] text-ink-50">
+            {me?.companyName ? `● ${me.companyName}` : "● 회사 미등록"}
+          </div>
+        </div>
       </div>
+
+      {/* 필드 */}
+      {isEditing ? (
+        <>
+          <FieldEdit label="이름" value={displayName} onChange={setDisplayName} />
+          <FieldEdit label="직책" value={position} onChange={setPosition} />
+          <FieldEdit label="회사" value={companyName} onChange={setCompanyName} />
+          <FieldRead label="이메일" value={me?.email ?? "—"} />
+
+          <div className="mt-6 flex items-center gap-3 border-t border-line pt-5">
+            <Button
+              variant="accent"
+              size="sm"
+              onClick={handleSave}
+              disabled={updateMe.isPending || isLoading}
+            >
+              {updateMe.isPending ? "저장 중…" : "변경 사항 저장"}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCancel}
+              disabled={updateMe.isPending}
+            >
+              취소
+            </Button>
+            {savedToast === "error" ? (
+              <span className="font-mono text-[11px] tracking-[0.04em] text-burn-500">
+                저장 실패: {updateMe.error?.message ?? "알 수 없는 오류"}
+              </span>
+            ) : null}
+          </div>
+        </>
+      ) : (
+        <>
+          <FieldRead label="이름" value={displayName || fallbackName} />
+          <FieldRead label="직책" value={position || "—"} />
+          <FieldRead label="회사" value={companyName || "—"} />
+          <FieldRead label="이메일" value={me?.email ?? "—"} last />
+
+          {savedToast === "saved" ? (
+            <div className="mt-5 inline-flex items-center gap-1.5 rounded-sm bg-[#EAF4EE] px-2.5 py-1 font-mono text-[11px] tracking-[0.04em] text-[#4F8A6E]">
+              ✓ 저장됨
+            </div>
+          ) : null}
+        </>
+      )}
     </Panel>
   );
 };
 
-const Field = ({
+const FieldRead = ({
   label,
   value,
-  onChange,
-  disabled,
+  last,
 }: {
   label: string;
   value: string;
-  onChange?: (v: string) => void;
-  disabled?: boolean;
+  last?: boolean;
+}) => (
+  <div
+    className={cn(
+      "flex items-center justify-between gap-4 py-3.5",
+      !last && "border-b border-line",
+    )}
+  >
+    <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-50">
+      {label}
+    </span>
+    <span className="truncate text-right text-[14px] text-ink">{value}</span>
+  </div>
+);
+
+const FieldEdit = ({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
 }) => (
   <div className="mb-[18px] flex flex-col gap-2">
     <label className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-50">
       {label}
     </label>
-    <Input
-      value={value}
-      onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-      disabled={disabled}
-      readOnly={!onChange}
-    />
+    <Input value={value} onChange={(e) => onChange(e.target.value)} />
   </div>
 );
 

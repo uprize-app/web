@@ -3,8 +3,11 @@
 import { useMe } from "@/features/me/hooks/useMe.query";
 import { formatJoinedSince, formatMemberId } from "@/features/me/lib/format";
 
+import { useUserStats } from "../hooks/useUserStats.query";
+
 export const MyPageHero = () => {
   const { data: me, isLoading } = useMe();
+  const stats = useUserStats();
 
   const initial = (me?.displayName ?? me?.email ?? "U")[0]!.toUpperCase();
   const name = me?.displayName ?? me?.email?.split("@")[0] ?? "사용자";
@@ -50,8 +53,16 @@ export const MyPageHero = () => {
             label="현재 플랜"
             value={<em className="display-italic text-burn-500">Studio</em>}
           />
-          <QuickItem label="이번 달 사용량" value="7 / 10" border />
-          <QuickItem label="다음 결제" value="D-12" border />
+          <QuickItem
+            label="이번 달 프로젝트"
+            value={`${stats.thisMonthProjects} / ${stats.monthlyProjectQuota}`}
+            border
+          />
+          <QuickItem
+            label="PDF 다운"
+            value={`${stats.thisMonthExports} / ${stats.monthlyExportQuota}`}
+            border
+          />
         </div>
       </div>
     </section>
