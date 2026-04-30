@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/shared/Logo";
 import { cn } from "@/lib/utils";
 import { useMe } from "@/features/me/hooks/useMe.query";
+import { useSession } from "@/features/auth/hooks/useSession";
+import { getSupabaseBrowser } from "@/shared/lib/supabase/client";
 
 const links = [
   { href: "/projects", label: "프로젝트" },
@@ -29,9 +31,19 @@ const initialFor = (displayName: string | null, email: string | null) =>
 
 export const Nav = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const isWizard = pathname.startsWith("/studio");
   const isLanding = pathname === "/";
+  const useDevAuth = process.env.NEXT_PUBLIC_USE_DEV_AUTH === "true";
+  const { session, loading: sessionLoading } = useSession();
+  const isAuthed = useDevAuth || Boolean(session);
   const { data: me } = useMe();
+
+  const handleLogout = async () => {
+    await getSupabaseBrowser().auth.signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <nav className="sticky top-0 z-50 border-b border-line bg-paper/80 backdrop-blur-xl">
@@ -76,32 +88,52 @@ export const Nav = () => {
             </>
           ) : isLanding ? (
             <>
-              <Link
-                href="/mypage"
-                className="hidden text-sm font-medium text-ink-50 transition hover:text-ink md:inline"
-              >
-                로그인
-              </Link>
+              {!isAuthed && !sessionLoading ? (
+                <Link
+                  href="/login"
+                  className="hidden text-sm font-medium text-ink-50 transition hover:text-ink md:inline"
+                >
+                  로그인
+                </Link>
+              ) : null}
               <Button asChild size="sm">
-                <Link href="/studio/new">
+                <Link href={isAuthed ? "/studio/new" : "/login?next=/studio/new"}>
                   시작하기
                   <ArrowRight size={14} strokeWidth={1.5} />
                 </Link>
               </Button>
             </>
+          ) : isAuthed ? (
+            <>
+              <Link
+                href="/mypage"
+                className="inline-flex items-center gap-2 text-sm font-medium text-ink-50 transition hover:text-ink"
+              >
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-ink text-paper">
+                  <span className="display-italic text-[13px]">
+                    {initialFor(me?.displayName ?? null, me?.email ?? null)}
+                  </span>
+                </span>
+                {me
+                  ? formatUserDisplay(me.displayName, me.position, me.email)
+                  : "프로필 불러오는 중…"}
+              </Link>
+              {!useDevAuth ? (
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-sm font-medium text-ink-50 transition hover:text-ink"
+                >
+                  로그아웃
+                </button>
+              ) : null}
+            </>
           ) : (
             <Link
-              href="/mypage"
-              className="inline-flex items-center gap-2 text-sm font-medium text-ink-50 transition hover:text-ink"
+              href="/login"
+              className="text-sm font-medium text-ink-50 transition hover:text-ink"
             >
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-ink text-paper">
-                <span className="display-italic text-[13px]">
-                  {initialFor(me?.displayName ?? null, me?.email ?? null)}
-                </span>
-              </span>
-              {me
-                ? formatUserDisplay(me.displayName, me.position, me.email)
-                : "프로필 불러오는 중…"}
+              로그인
             </Link>
           )}
         </div>

@@ -4,6 +4,8 @@ import axios, {
   type AxiosRequestConfig,
 } from "axios";
 
+import { getSupabaseBrowser } from "./supabase/client";
+
 /**
  * 백엔드 응답 envelope.
  * 모든 응답이 `{ status: true, data: T }` 또는 `{ status: false, message: string }`.
@@ -35,15 +37,29 @@ const instance: AxiosInstance = axios.create({
   timeout: 30_000,
 });
 
-/** 요청 인터셉터 — dev 환경에서는 X-Dev-User-Id, prod 는 추후 Supabase JWT 주입 */
-instance.interceptors.request.use((config) => {
-  const devUserId = process.env.NEXT_PUBLIC_DEV_USER_ID;
-  if (devUserId) {
-    config.headers.set("X-Dev-User-Id", devUserId);
+/**
+ * 요청 인터셉터 — USE_DEV_AUTH=true 면 X-Dev-User-Id, 아니면 Supabase Bearer.
+ * 브라우저 환경에서만 Supabase 세션을 읽는다.
+ */
+instance.interceptors.request.use(async (config) => {
+  const useDevAuth = process.env.NEXT_PUBLIC_USE_DEV_AUTH === "true";
+
+  if (useDevAuth) {
+    const devUserId = process.env.NEXT_PUBLIC_DEV_USER_ID;
+    if (devUserId) config.headers.set("X-Dev-User-Id", devUserId);
+    return config;
   }
-  // TODO: Supabase 세션 토큰 주입
-  // const token = supabase.auth.getSession()?.data?.session?.access_token
-  // if (token) config.headers.set("Authorization", `Bearer ${token}`)
+
+  if (typeof window !== "undefined") {
+    try {
+      const { data } = await getSupabaseBrowser().auth.getSession();
+      const token = data.session?.access_token;
+      if (token) config.headers.set("Authorization", `Bearer ${token}`);
+    } catch (e) {
+      console.warn("[apiClient] Supabase 세션 읽기 실패", e);
+    }
+  }
+
   return config;
 });
 
