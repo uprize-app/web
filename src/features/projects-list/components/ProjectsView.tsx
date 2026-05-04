@@ -1,18 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowDown, Plus, TrendingUp } from "lucide-react";
+import { useQueries } from "@tanstack/react-query";
 
-import { Button } from "@/components/ui/button";
-
-import type { Project } from "@/shared/types/api.types";
+import { fetchProjectGenerations } from "@/features/generation/api/generation.api";
+import { GENERATION_KEYS } from "@/features/generation/hooks/useGeneration.query";
+import type { Generation, Project } from "@/shared/types/api.types";
 
 import { useProjectList } from "../hooks/useProjectList.query";
 import {
   formatAddress,
   formatProjectName,
-  toUiStatus,
+  resolveProjectListStatus,
 } from "../lib/projectView";
 import type { ProjectFilter } from "../types/project.types";
 
@@ -20,9 +19,15 @@ import { NewProjectCard } from "./NewProjectCard";
 import { ProjectCard } from "./ProjectCard";
 import { ProjectsToolbar } from "./ProjectsToolbar";
 
-const matchesFilter = (p: Project, f: ProjectFilter) => {
+const PROJECT_GENERATION_POLL_MS = 5_000;
+
+const matchesFilter = (
+  p: Project,
+  f: ProjectFilter,
+  generations: Generation[] | undefined,
+) => {
   if (f === "all") return true;
-  return toUiStatus(p.status) === f;
+  return resolveProjectListStatus(p.status, generations) === f;
 };
 
 const matchesSearch = (p: Project, q: string) => {
@@ -34,25 +39,21 @@ const matchesSearch = (p: Project, q: string) => {
   );
 };
 
-const NUM_FORMAT = new Intl.NumberFormat("ko-KR");
-
-const computeStats = (projects: Project[]) => {
-  const totalCount = projects.length;
-  const doneCount = projects.filter((p) => p.status === "generated").length;
-  // 합성 면적 — 평 → ㎡ 환산 (1평 ≈ 3.3058㎡)
-  const totalSqm = projects.reduce((acc, p) => acc + p.siteArea * 3.3058, 0);
-  return {
-    totalCount,
-    doneCount,
-    totalSqm: Math.round(totalSqm),
-  };
-};
-
-const computeFilterCounts = (projects: Project[]) => ({
+const computeFilterCounts = (
+  projects: Project[],
+  generationByProjectId: ReadonlyMap<string, Generation[]>,
+) => ({
   all: projects.length,
-  done: projects.filter((p) => toUiStatus(p.status) === "done").length,
-  work: projects.filter((p) => toUiStatus(p.status) === "work").length,
-  draft: projects.filter((p) => toUiStatus(p.status) === "draft").length,
+  done: projects.filter(
+    (p) =>
+      resolveProjectListStatus(p.status, generationByProjectId.get(p.id)) ===
+      "done",
+  ).length,
+  work: projects.filter(
+    (p) =>
+      resolveProjectListStatus(p.status, generationByProjectId.get(p.id)) ===
+      "work",
+  ).length,
 });
 
 export const ProjectsView = () => {
@@ -61,22 +62,46 @@ export const ProjectsView = () => {
 
   const { data, isLoading, isError, error } = useProjectList();
   const projects = useMemo(() => data ?? [], [data]);
+  const generationQueries = useQueries({
+    queries: projects.map((p) => ({
+      queryKey: GENERATION_KEYS.projectList(p.id),
+      queryFn: () => fetchProjectGenerations(p.id),
+      refetchInterval: PROJECT_GENERATION_POLL_MS,
+      refetchIntervalInBackground: false,
+      staleTime: 15_000,
+    })),
+  });
 
-  const stats = useMemo(() => computeStats(projects), [projects]);
-  const filterCounts = useMemo(() => computeFilterCounts(projects), [projects]);
+  const generationByProjectId = useMemo(
+    () =>
+      new Map(
+        projects.map((p, i) => [
+          p.id,
+          generationQueries[i]?.data ?? [],
+        ]),
+      ),
+    [projects, generationQueries],
+  );
+
+  const filterCounts = useMemo(
+    () => computeFilterCounts(projects, generationByProjectId),
+    [projects, generationByProjectId],
+  );
 
   const filtered = useMemo(
     () =>
       projects.filter(
-        (p) => matchesFilter(p, filter) && matchesSearch(p, search),
+        (p) =>
+          matchesFilter(p, filter, generationByProjectId.get(p.id)) &&
+          matchesSearch(p, search),
       ),
-    [projects, filter, search],
+    [projects, filter, search, generationByProjectId],
   );
 
   return (
     <>
       <section className="border-b border-line py-14">
-        <div className="mx-auto flex max-w-[1280px] items-end justify-between gap-8 px-8">
+        <div className="mx-auto max-w-[1280px] px-8">
           <div>
             <div className="mb-3.5 flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-50">
               <span className="h-px w-6 bg-burn-500" />
@@ -86,39 +111,6 @@ export const ProjectsView = () => {
               프로젝트
               <em className="not-italic display-italic text-burn-500">.</em>
             </h1>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm">
-              최근 수정순
-              <ArrowDown size={12} strokeWidth={1.5} />
-            </Button>
-            <Button asChild variant="accent" size="sm">
-              <Link href="/studio/new">
-                <Plus size={14} strokeWidth={1.6} />
-                신규 프로젝트
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-line">
-        <div className="mx-auto max-w-[1280px] px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4">
-            <Stat label="전체 프로젝트" value={String(stats.totalCount)} suffix="건" first />
-            <Stat
-              label="생성 완료"
-              value={String(stats.doneCount)}
-              suffix="건"
-              emphasized
-            />
-            <Stat
-              label="총 합성 면적"
-              value={NUM_FORMAT.format(stats.totalSqm)}
-              suffix="㎡"
-            />
-            <Stat label="이번 달 신규" value="—" suffix="건" trend="백엔드 연결 후" last />
           </div>
         </div>
       </section>
@@ -167,48 +159,6 @@ export const ProjectsView = () => {
     </>
   );
 };
-
-type StatProps = {
-  label: string;
-  value: string;
-  suffix: string;
-  trend?: string;
-  emphasized?: boolean;
-  first?: boolean;
-  last?: boolean;
-};
-
-const Stat = ({ label, value, suffix, trend, emphasized, first, last }: StatProps) => (
-  <div
-    className={
-      [
-        "py-8",
-        first ? "" : "md:pl-8",
-        last ? "" : "md:border-r md:border-line md:pr-8",
-      ]
-        .filter(Boolean)
-        .join(" ")
-    }
-  >
-    <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-50">
-      {label}
-    </div>
-    <div className="display-italic flex items-baseline text-[40px] leading-none tracking-[-0.02em] not-italic">
-      {emphasized ? (
-        <em className="display-italic text-burn-500">{value}</em>
-      ) : (
-        <span>{value}</span>
-      )}
-      <sup className="ml-1 align-top text-sm text-ink-50">{suffix}</sup>
-    </div>
-    {trend ? (
-      <div className="mt-2.5 inline-flex items-center gap-1 text-[12px] text-ink-50">
-        <TrendingUp size={10} strokeWidth={1.4} />
-        {trend}
-      </div>
-    ) : null}
-  </div>
-);
 
 const CardSkeleton = () => (
   <div className="overflow-hidden rounded-lg border border-line bg-white">

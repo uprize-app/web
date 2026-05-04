@@ -39,6 +39,8 @@ export const Nav = () => {
   const { data: me, error: meError } = useMe({ enabled: isAuthed });
   const hasBackendAuthError = isUnauthorizedApiError(meError);
   const canShowAuthedNav = isAuthed && !hasBackendAuthError;
+  const canShowProjectLink =
+    pathname === "/" || pathname.startsWith("/mypage");
 
   return (
     <nav className="sticky top-0 z-50 border-b border-line bg-paper/80 backdrop-blur-xl">
@@ -47,7 +49,7 @@ export const Nav = () => {
           <Link href="/" className="inline-flex items-center gap-[10px]">
             <Logo />
           </Link>
-          {canShowAuthedNav ? (
+          {canShowAuthedNav && canShowProjectLink ? (
             <div className="hidden gap-9 md:flex">
               {links.map((link) => {
                 const active = pathname.startsWith(link.href);

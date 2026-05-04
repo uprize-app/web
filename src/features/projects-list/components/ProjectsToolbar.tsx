@@ -10,10 +10,9 @@ const FILTER_LABEL: Record<ProjectFilter, string> = {
   all: "전체",
   work: "생성중",
   done: "완료",
-  draft: "초안",
 };
 
-const FILTER_ORDER: ReadonlyArray<ProjectFilter> = ["all", "work", "done", "draft"];
+const FILTER_ORDER: ReadonlyArray<ProjectFilter> = ["all", "work", "done"];
 
 type Props = {
   filter: ProjectFilter;

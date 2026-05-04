@@ -1,36 +1,71 @@
 import type {
+  BuildingType,
   DesignStyle,
+  GenerationPackageStatus,
   Project,
   ProjectStatus,
 } from "@/shared/types/api.types";
 
-/** 카드 상단 status pill 변환 (백엔드 status → UI 종류) */
-export type UiStatus = "done" | "work" | "draft";
+/** 백엔드 status 를 프로젝트 목록 필터 단위로 변환 */
+export type UiStatus = "done" | "work";
 
 const STATUS_MAP: Record<ProjectStatus, UiStatus> = {
   generated: "done",
   ready: "work",
-  draft: "draft",
+  draft: "work",
 };
 
 export const toUiStatus = (status: ProjectStatus): UiStatus => STATUS_MAP[status];
 
-const STYLE_LABEL: Record<DesignStyle, string> = {
-  iconic: "ICONIC",
-  futurist: "FUTURIST",
-  biophilic: "BIOPHILIC",
-  heritage: "HERITAGE",
-  curtainwall: "CURTAINWALL",
-  darkstone: "DARKSTONE",
+type ProjectGenerationStatusSource = {
+  status: GenerationPackageStatus;
+  createdAt: string;
 };
 
-/** "HOTEL · ICONIC" 형태 카테고리 라벨 */
-export const formatCategory = (project: Project) =>
-  `${project.buildingType.toUpperCase()} · ${STYLE_LABEL[project.designStyle]}`;
+const GENERATION_STATUS_MAP: Record<GenerationPackageStatus, UiStatus> = {
+  completed: "done",
+  pending: "work",
+  running: "work",
+  failed: "work",
+};
 
-/** 짧은 ID — 디자인의 "UP-2604-09" 패턴은 백엔드에 없어서 UUID 앞 6자 사용 */
-export const formatProjectShortId = (id: string) =>
-  `UP-${id.slice(0, 6).toUpperCase()}`;
+export const getLatestProjectGeneration = <
+  T extends ProjectGenerationStatusSource,
+>(
+  generations: ReadonlyArray<T> | undefined,
+) =>
+  generations
+    ? [...generations].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )[0] ?? null
+    : null;
+
+export const resolveProjectListStatus = (
+  projectStatus: ProjectStatus,
+  generations?: ReadonlyArray<ProjectGenerationStatusSource>,
+): UiStatus => {
+  const latestGeneration = getLatestProjectGeneration(generations);
+  if (latestGeneration) return GENERATION_STATUS_MAP[latestGeneration.status];
+  return toUiStatus(projectStatus);
+};
+
+const BUILDING_LABEL: Record<BuildingType, string> = {
+  hotel: "호텔",
+};
+
+const STYLE_LABEL: Record<DesignStyle, string> = {
+  iconic: "아이코닉",
+  futurist: "미래주의",
+  biophilic: "바이오필릭",
+  heritage: "헤리티지",
+  curtainwall: "커튼월",
+  darkstone: "다크스톤",
+};
+
+/** "호텔 · 아이코닉" 형태 카테고리 라벨 */
+export const formatCategory = (project: Project) =>
+  `${BUILDING_LABEL[project.buildingType]} · ${STYLE_LABEL[project.designStyle]}`;
 
 /** 대지면적 포맷 (백엔드는 평 단위) */
 export const formatSiteArea = (areaPyeong: number) =>
