@@ -37,17 +37,11 @@ const instance: AxiosInstance = axios.create({
 });
 
 /**
- * 요청 인터셉터 — USE_DEV_AUTH=true 면 X-Dev-User-Id, 아니면 Supabase Bearer.
- * 브라우저 환경에서만 Supabase 세션을 읽는다.
+ * 요청 인터셉터 — Supabase 세션이 있으면 항상 Bearer 를 우선 붙인다.
+ * USE_DEV_AUTH=true 는 로컬 개발용 X-Dev-User-Id 를 추가로 붙이는 역할만 한다.
  */
 instance.interceptors.request.use(async (config) => {
   const useDevAuth = process.env.NEXT_PUBLIC_USE_DEV_AUTH === "true";
-
-  if (useDevAuth) {
-    const devUserId = process.env.NEXT_PUBLIC_DEV_USER_ID;
-    if (devUserId) config.headers.set("X-Dev-User-Id", devUserId);
-    return config;
-  }
 
   if (typeof window !== "undefined") {
     try {
@@ -57,6 +51,11 @@ instance.interceptors.request.use(async (config) => {
     } catch (e) {
       console.warn("[apiClient] Supabase 세션 읽기 실패", e);
     }
+  }
+
+  if (useDevAuth) {
+    const devUserId = process.env.NEXT_PUBLIC_DEV_USER_ID;
+    if (devUserId) config.headers.set("X-Dev-User-Id", devUserId);
   }
 
   return config;

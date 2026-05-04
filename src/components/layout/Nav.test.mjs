@@ -18,3 +18,14 @@ test("shows the projects header link only on home and mypage", async () => {
   assert.match(source, /canShowAuthedNav && canShowProjectLink/);
   assert.equal(source.includes('pathname.startsWith("/projects")'), false);
 });
+
+test("uses an authenticated mobile menu instead of the user name", async () => {
+  const source = await readFile(new URL("./Nav.tsx", import.meta.url), "utf8");
+
+  assert.match(source, /useState\(false\)/);
+  assert.match(source, /Menu/);
+  assert.match(source, /X/);
+  assert.match(source, /md:hidden/);
+  assert.match(source, /hidden md:inline-flex/);
+  assert.match(source, /마이페이지/);
+});
