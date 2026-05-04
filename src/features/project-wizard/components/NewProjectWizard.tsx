@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AlertCircle } from "lucide-react";
 
+import { validateSiteInfoForNext } from "../lib/siteInfoValidation";
 import { useWizardDraftStore } from "../stores/wizardDraft.store";
 import type { WizardStepId } from "../types/wizard.types";
 
@@ -21,12 +23,15 @@ const parseStepFromUrl = (raw: string | null): WizardStepId => {
   return n as WizardStepId;
 };
 
+const TOAST_DISMISS_MS = 5000;
+
 export const NewProjectWizard = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const draft = useWizardDraftStore();
   const { step, setStep, goNext, goPrev } = draft;
-  const [submitError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // URL ?step=N 을 단일 source-of-truth 로 동기화 (뒤로가기/공유 지원)
   useEffect(() => {
@@ -34,6 +39,28 @@ export const NewProjectWizard = () => {
     if (urlStep !== step) setStep(urlStep);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  useEffect(
+    () => () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    },
+    [],
+  );
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(
+      () => setToastMessage(null),
+      TOAST_DISMISS_MS,
+    );
+  };
+
+  const hideToast = () => {
+    setToastMessage(null);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = null;
+  };
 
   const writeStepToUrl = (next: WizardStepId) => {
     const params = new URLSearchParams(Array.from(searchParams.entries()));
@@ -49,11 +76,18 @@ export const NewProjectWizard = () => {
 
   const handleNext = () => {
     if (step >= 5) {
-      // Step 5 자체 "AI 생성 시작" 버튼이 저장 + 생성을 처리.
-      // footer 는 단순 종료 = 프로젝트 리스트로 이동.
-      router.push("/projects");
       return;
     }
+
+    if (step === 3) {
+      const validation = validateSiteInfoForNext(draft.siteInfo);
+      if (!validation.ok) {
+        showToast(validation.reason);
+        return;
+      }
+    }
+
+    hideToast();
     const next = (step + 1) as WizardStepId;
     goNext();
     writeStepToUrl(next);
@@ -71,6 +105,21 @@ export const NewProjectWizard = () => {
       <WizardSidebar step={step} onStepChange={handleStepChange} />
 
       <main className="flex min-h-full flex-col px-6 py-8 md:px-16 md:py-14">
+        {toastMessage ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className="fixed left-5 right-5 top-20 z-[60] flex items-start gap-2.5 rounded-md border border-burn-200 bg-white px-4 py-3 text-[13px] text-ink shadow-lift sm:left-auto sm:right-6 sm:top-24 sm:w-[360px]"
+          >
+            <AlertCircle
+              size={16}
+              strokeWidth={2}
+              className="mt-0.5 shrink-0 text-burn-500"
+            />
+            <span>{toastMessage}</span>
+          </div>
+        ) : null}
+
         <div className="flex-1">
           {step === 1 ? <Step1Map /> : null}
           {step === 2 ? <Step2Background /> : null}
@@ -79,13 +128,12 @@ export const NewProjectWizard = () => {
           {step === 5 ? <Step5Result /> : null}
         </div>
 
-        {submitError ? (
-          <div className="mt-6 rounded-md border border-burn-200 bg-burn-50 px-4 py-2.5 text-[13px] text-burn-700">
-            {submitError}
-          </div>
-        ) : null}
-
-        <WizardFooter step={step} onPrev={handlePrev} onNext={handleNext} />
+        <WizardFooter
+          step={step}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          nextDisabled={step === 5}
+        />
       </main>
     </div>
   );

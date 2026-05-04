@@ -27,17 +27,17 @@ export const useAddressSearch = (query: string): State => {
 
   useEffect(() => {
     const trimmed = query.trim();
-    if (!trimmed) {
-      setState(idle);
-      return;
-    }
+    if (!trimmed) return;
 
     let cancelled = false;
-    setState((prev) => ({
-      status: "loading",
-      results: prev.status === "ready" ? prev.results : [],
-      error: null,
-    }));
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setState((prev) => ({
+        status: "loading",
+        results: prev.status === "ready" ? prev.results : [],
+        error: null,
+      }));
+    });
 
     const timer = window.setTimeout(async () => {
       try {
@@ -82,5 +82,5 @@ export const useAddressSearch = (query: string): State => {
     };
   }, [query]);
 
-  return state;
+  return query.trim() ? state : idle;
 };

@@ -37,7 +37,7 @@ const cols = [
 ] as const;
 
 export const Footer = ({ variant = "full" }: Props) => (
-  <footer className="bg-ink text-ink-30">
+  <footer className="mt-auto bg-ink text-ink-30">
     <div className="mx-auto max-w-[1280px] px-8 pb-10 pt-20">
       {variant === "full" ? (
         <div className="mb-14 grid gap-12 md:grid-cols-[1.4fr_repeat(3,1fr)]">

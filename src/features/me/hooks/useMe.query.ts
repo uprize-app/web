@@ -13,10 +13,15 @@ export const ME_KEYS = {
   all: ["me"] as const,
 };
 
-export const useMe = () =>
+type UseMeOptions = {
+  enabled?: boolean;
+};
+
+export const useMe = (options: UseMeOptions = {}) =>
   useQuery({
     queryKey: ME_KEYS.all,
     queryFn: fetchMe,
+    enabled: options.enabled ?? true,
     staleTime: 60_000,
   });
 

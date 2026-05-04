@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+import { useSignOut } from "@/features/auth/hooks/useSignOut";
 import { useMe, useUpdateMe } from "@/features/me/hooks/useMe.query";
-import { getSupabaseBrowser } from "@/shared/lib/supabase/client";
 
 import { Panel } from "../Panel";
 import { SectionHeader } from "../SectionHeader";
@@ -95,21 +94,10 @@ export const AccountTab = () => {
 };
 
 const SignOutPanel = () => {
-  const router = useRouter();
-  const useDevAuth = process.env.NEXT_PUBLIC_USE_DEV_AUTH === "true";
-  const [pending, setPending] = useState(false);
-
-  if (useDevAuth) return null;
-
-  const handleSignOut = async () => {
-    setPending(true);
-    await getSupabaseBrowser().auth.signOut();
-    router.push("/");
-    router.refresh();
-  };
+  const signOut = useSignOut();
 
   return (
-    <div className="mt-8 flex items-center justify-between rounded-md border border-line bg-paper px-7 py-6">
+    <div className="mt-8 flex flex-col gap-4 rounded-md border border-line bg-paper px-7 py-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       <div>
         <h4 className="display-italic m-0 mb-1.5 text-xl text-ink not-italic">
           로그아웃
@@ -121,11 +109,16 @@ const SignOutPanel = () => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={handleSignOut}
-        disabled={pending}
+        onClick={signOut.signOut}
+        disabled={signOut.pending}
       >
-        {pending ? "로그아웃 중…" : "로그아웃"}
+        {signOut.pending ? "로그아웃 중…" : "로그아웃"}
       </Button>
+      {signOut.errorMessage ? (
+        <p className="m-0 text-[12px] text-burn-500 sm:basis-full">
+          로그아웃에 실패했습니다. {signOut.errorMessage}
+        </p>
+      ) : null}
     </div>
   );
 };
@@ -140,15 +133,6 @@ const ProfilePanel = () => {
   const [companyName, setCompanyName] = useState("");
   const [savedToast, setSavedToast] = useState<"saved" | "error" | null>(null);
 
-  // 서버 데이터 도착 시 폼에 반영
-  useEffect(() => {
-    if (me) {
-      setDisplayName(me.displayName ?? "");
-      setPosition(me.position ?? "");
-      setCompanyName(me.companyName ?? "");
-    }
-  }, [me]);
-
   const initial = (
     me?.displayName ??
     me?.email ??
@@ -157,16 +141,14 @@ const ProfilePanel = () => {
   const fallbackName = me?.email?.split("@")[0] ?? "사용자";
 
   const handleEdit = () => {
+    setDisplayName(me?.displayName ?? "");
+    setPosition(me?.position ?? "");
+    setCompanyName(me?.companyName ?? "");
     setSavedToast(null);
     setIsEditing(true);
   };
 
   const handleCancel = () => {
-    if (me) {
-      setDisplayName(me.displayName ?? "");
-      setPosition(me.position ?? "");
-      setCompanyName(me.companyName ?? "");
-    }
     setSavedToast(null);
     setIsEditing(false);
   };
@@ -259,9 +241,9 @@ const ProfilePanel = () => {
         </>
       ) : (
         <>
-          <FieldRead label="이름" value={displayName || fallbackName} />
-          <FieldRead label="직책" value={position || "—"} />
-          <FieldRead label="회사" value={companyName || "—"} />
+          <FieldRead label="이름" value={me?.displayName ?? fallbackName} />
+          <FieldRead label="직책" value={me?.position ?? "—"} />
+          <FieldRead label="회사" value={me?.companyName ?? "—"} />
           <FieldRead label="이메일" value={me?.email ?? "—"} last />
 
           {savedToast === "saved" ? (

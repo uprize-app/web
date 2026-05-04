@@ -5,25 +5,24 @@ import axios, {
 } from "axios";
 
 import { getSupabaseBrowser } from "./supabase/client";
+import {
+  createApiError,
+  isApiError,
+  type ApiError,
+} from "./apiError";
+
+export {
+  createApiError,
+  isApiError,
+  isUnauthorizedApiError,
+  type ApiError,
+} from "./apiError";
 
 /**
  * 백엔드 응답 envelope.
  * 모든 응답이 `{ status: true, data: T }` 또는 `{ status: false, message: string }`.
  */
 type Envelope<T> = { status: true; data: T } | { status: false; message: string };
-
-/**
- * 정규화된 API 에러.
- * UI 는 instanceof ApiError 로 분기.
- */
-export class ApiError extends Error {
-  readonly httpStatus?: number;
-  constructor(message: string, httpStatus?: number) {
-    super(message);
-    this.name = "ApiError";
-    this.httpStatus = httpStatus;
-  }
-}
 
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 if (!baseURL) {
@@ -65,27 +64,27 @@ instance.interceptors.request.use(async (config) => {
 
 const unwrap = <T,>(env: Envelope<T>, httpStatus: number): T => {
   if (env.status === true) return env.data;
-  throw new ApiError(env.message, httpStatus);
+  throw createApiError(env.message, httpStatus);
 };
 
 const normalize = (error: unknown): ApiError => {
-  if (error instanceof ApiError) return error;
+  if (isApiError(error)) return error;
   if (error instanceof AxiosError) {
     const data = error.response?.data as Envelope<unknown> | undefined;
     const httpStatus = error.response?.status;
     if (data && data.status === false) {
-      return new ApiError(data.message, httpStatus);
+      return createApiError(data.message, httpStatus);
     }
     if (error.code === "ECONNABORTED") {
-      return new ApiError("요청 시간이 초과됐습니다.", httpStatus);
+      return createApiError("요청 시간이 초과됐습니다.", httpStatus);
     }
     if (!error.response) {
-      return new ApiError("백엔드에 연결할 수 없습니다.", undefined);
+      return createApiError("백엔드에 연결할 수 없습니다.", undefined);
     }
-    return new ApiError(error.message, httpStatus);
+    return createApiError(error.message, httpStatus);
   }
-  if (error instanceof Error) return new ApiError(error.message);
-  return new ApiError("알 수 없는 오류");
+  if (error instanceof Error) return createApiError(error.message);
+  return createApiError("알 수 없는 오류");
 };
 
 const request = async <T,>(

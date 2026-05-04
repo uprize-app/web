@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 
 import { STEPS } from "../constants/steps";
 import { DESIGN_STYLE_BY_ID } from "../constants/designStyles";
-import { BUILDING_USE_LABEL } from "../constants/buildingUse";
-import { formatArea } from "../lib/format";
+import { formatNumber } from "../lib/format";
+import { sqmToPyeong } from "../lib/siteAreaBand";
 
 import { useWizardDraftStore } from "../stores/wizardDraft.store";
 
@@ -29,11 +29,14 @@ export const WizardSidebar = ({ step, onStepChange }: Props) => {
     },
     {
       label: "대지면적",
-      value: step >= 3 ? formatArea(siteInfo.areaSqm) : null,
+      value:
+        step >= 3
+          ? `${formatNumber(sqmToPyeong(siteInfo.areaSqm))}평`
+          : null,
     },
     {
       label: "용도",
-      value: step >= 3 ? BUILDING_USE_LABEL[siteInfo.use] : null,
+      value: step >= 3 ? "호텔" : null,
     },
     {
       label: "스타일",

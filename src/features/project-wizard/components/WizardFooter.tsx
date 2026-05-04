@@ -11,9 +11,15 @@ type Props = {
   step: WizardStepId;
   onPrev: () => void;
   onNext: () => void;
+  nextDisabled?: boolean;
 };
 
-export const WizardFooter = ({ step, onPrev, onNext }: Props) => {
+export const WizardFooter = ({
+  step,
+  onPrev,
+  onNext,
+  nextDisabled = false,
+}: Props) => {
   const isFirst = step === 1;
   const isLast = step === STEPS.length;
   const helper = STEPS[step - 1]!.helper;
@@ -36,7 +42,13 @@ export const WizardFooter = ({ step, onPrev, onNext }: Props) => {
         STEP {num} / 05 · {helper}
       </div>
 
-      <Button type="button" variant="accent" size="sm" onClick={onNext}>
+      <Button
+        type="button"
+        variant="accent"
+        size="sm"
+        onClick={onNext}
+        disabled={nextDisabled}
+      >
         {isLast ? (
           <>
             완료 · 프로젝트 보기

@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { useSignOut } from "@/features/auth/hooks/useSignOut";
 import { useMe } from "@/features/me/hooks/useMe.query";
 import { formatJoinedSince, formatMemberId } from "@/features/me/lib/format";
 
@@ -8,6 +10,7 @@ import { useUserStats } from "../hooks/useUserStats.query";
 export const MyPageHero = () => {
   const { data: me, isLoading } = useMe();
   const stats = useUserStats();
+  const signOut = useSignOut();
 
   const initial = (me?.displayName ?? me?.email ?? "U")[0]!.toUpperCase();
   const name = me?.displayName ?? me?.email?.split("@")[0] ?? "사용자";
@@ -48,21 +51,38 @@ export const MyPageHero = () => {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-8 rounded-lg border border-line bg-white px-7 py-5">
-          <QuickItem
-            label="현재 플랜"
-            value={<em className="display-italic text-burn-500">Studio</em>}
-          />
-          <QuickItem
-            label="이번 달 프로젝트"
-            value={`${stats.thisMonthProjects} / ${stats.monthlyProjectQuota}`}
-            border
-          />
-          <QuickItem
-            label="PDF 다운"
-            value={`${stats.thisMonthExports} / ${stats.monthlyExportQuota}`}
-            border
-          />
+        <div className="flex flex-col items-start gap-4 lg:items-end">
+          <div className="flex flex-wrap gap-8 rounded-lg border border-line bg-white px-7 py-5">
+            <QuickItem
+              label="현재 플랜"
+              value={<em className="display-italic text-burn-500">Studio</em>}
+            />
+            <QuickItem
+              label="이번 달 프로젝트"
+              value={`${stats.thisMonthProjects} / ${stats.monthlyProjectQuota}`}
+              border
+            />
+            <QuickItem
+              label="PDF 다운"
+              value={`${stats.thisMonthExports} / ${stats.monthlyExportQuota}`}
+              border
+            />
+          </div>
+          <div className="flex flex-col items-start gap-2 lg:items-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={signOut.signOut}
+              disabled={signOut.pending}
+            >
+              {signOut.pending ? "로그아웃 중…" : "로그아웃"}
+            </Button>
+            {signOut.errorMessage ? (
+              <p className="m-0 max-w-[320px] text-[12px] text-burn-500">
+                로그아웃에 실패했습니다. {signOut.errorMessage}
+              </p>
+            ) : null}
+          </div>
         </div>
       </div>
     </section>

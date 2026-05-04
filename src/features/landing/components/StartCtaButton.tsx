@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/features/auth/hooks/useSession";
+import { startHrefForSession } from "@/features/auth/lib/authNavigation";
 
 type StartCtaButtonProps = {
   variant?: "accent" | "default" | "ghost";
@@ -21,15 +22,8 @@ export const StartCtaButton = ({
   label = "무료로 시작하기",
   className,
 }: StartCtaButtonProps) => {
-  const useDevAuth = process.env.NEXT_PUBLIC_USE_DEV_AUTH === "true";
-  const { session, loading } = useSession();
-  const isAuthed = useDevAuth || Boolean(session);
-
-  const href = loading
-    ? "/studio/new"
-    : isAuthed
-      ? "/studio/new"
-      : "/login?next=/studio/new";
+  const { session } = useSession();
+  const href = startHrefForSession(session);
 
   return (
     <Button asChild variant={variant} size={size} className={className}>

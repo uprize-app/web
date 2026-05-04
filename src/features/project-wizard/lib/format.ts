@@ -5,6 +5,16 @@ export const formatArea = (sqm: number) =>
 
 export const formatNumber = (n: number) => NUMBER_FORMAT.format(n);
 
+export const formatEokWon = (eokWon: number) => {
+  const rounded = Math.round(eokWon);
+  const jo = Math.floor(rounded / 10_000);
+  const eok = rounded % 10_000;
+
+  if (jo <= 0) return `${formatNumber(rounded)}억 원`;
+  if (eok === 0) return `${formatNumber(jo)}조 원`;
+  return `${formatNumber(jo)}조 ${formatNumber(eok)}억 원`;
+};
+
 /**
  * 자동 계산 결과 (목업).
  * 추후 백엔드 계산식으로 대체.

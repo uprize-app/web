@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 
 import { updateSession } from "@/shared/lib/supabase/middleware";
 
-export const middleware = (request: NextRequest) => updateSession(request);
+export const proxy = (request: NextRequest) => updateSession(request);
 
 export const config = {
   matcher: [

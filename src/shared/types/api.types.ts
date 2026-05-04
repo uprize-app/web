@@ -95,11 +95,14 @@ export type SiteImageCategory =
   | "river"
   | "countryside";
 
+export type SiteImageSizeBand = "small" | "medium" | "large";
+
 export type SiteImage = {
   id: string;
   name: string;
   imageUrl: string;
   category: SiteImageCategory;
+  sizeBand: SiteImageSizeBand;
   displayOrder: number;
 };
 

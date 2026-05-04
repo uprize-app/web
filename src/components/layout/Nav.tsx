@@ -8,10 +8,14 @@ import { Logo } from "@/components/shared/Logo";
 import { cn } from "@/lib/utils";
 import { useMe } from "@/features/me/hooks/useMe.query";
 import { useSession } from "@/features/auth/hooks/useSession";
+import {
+  accountHrefForSession,
+  isSessionAuthenticated,
+} from "@/features/auth/lib/authNavigation";
+import { isUnauthorizedApiError } from "@/shared/lib/apiClient";
 
 const links = [
   { href: "/projects", label: "프로젝트" },
-  { href: "/mypage", label: "마이페이지" },
 ];
 
 /** 표시용 유저명 — null fallback 일관성 */
@@ -29,11 +33,12 @@ const initialFor = (displayName: string | null, email: string | null) =>
 
 export const Nav = () => {
   const pathname = usePathname();
-  const isWizard = pathname.startsWith("/studio");
-  const useDevAuth = process.env.NEXT_PUBLIC_USE_DEV_AUTH === "true";
+  const isLogin = pathname.startsWith("/login");
   const { session, loading: sessionLoading } = useSession();
-  const isAuthed = useDevAuth || Boolean(session);
-  const { data: me } = useMe();
+  const isAuthed = isSessionAuthenticated(session);
+  const { data: me, error: meError } = useMe({ enabled: isAuthed });
+  const hasBackendAuthError = isUnauthorizedApiError(meError);
+  const canShowAuthedNav = isAuthed && !hasBackendAuthError;
 
   return (
     <nav className="sticky top-0 z-50 border-b border-line bg-paper/80 backdrop-blur-xl">
@@ -42,43 +47,33 @@ export const Nav = () => {
           <Link href="/" className="inline-flex items-center gap-[10px]">
             <Logo />
           </Link>
-          <div className="hidden gap-9 md:flex">
-            {links.map((link) => {
-              const active = pathname.startsWith(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "relative py-1 text-sm font-medium transition",
-                    active
-                      ? "text-ink after:absolute after:inset-x-0 after:-bottom-[26px] after:h-0.5 after:bg-burn-500"
-                      : "text-ink-50 hover:text-ink",
-                  )}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </div>
+          {canShowAuthedNav ? (
+            <div className="hidden gap-9 md:flex">
+              {links.map((link) => {
+                const active = pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "relative py-1 text-sm font-medium transition",
+                      active
+                        ? "text-ink after:absolute after:inset-x-0 after:-bottom-[26px] after:h-0.5 after:bg-burn-500"
+                        : "text-ink-50 hover:text-ink",
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-3">
-          {isWizard ? (
-            <>
-              <Link
-                href="/projects"
-                className="text-sm font-medium text-ink-50 transition hover:text-ink"
-              >
-                취소
-              </Link>
-              <Button variant="ghost" size="sm">
-                임시저장
-              </Button>
-            </>
-          ) : sessionLoading ? null : isAuthed ? (
+          {sessionLoading || isLogin ? null : canShowAuthedNav ? (
             <Link
-              href="/mypage"
+              href={accountHrefForSession(session)}
               className="inline-flex items-center gap-2 text-sm font-medium text-ink-50 transition hover:text-ink"
             >
               <span className="grid h-7 w-7 place-items-center rounded-full bg-ink text-paper">
@@ -91,12 +86,9 @@ export const Nav = () => {
                 : "프로필 불러오는 중…"}
             </Link>
           ) : (
-            <Link
-              href="/login"
-              className="text-sm font-medium text-ink-50 transition hover:text-ink"
-            >
-              로그인
-            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link href={accountHrefForSession(session)}>로그인</Link>
+            </Button>
           )}
         </div>
       </div>

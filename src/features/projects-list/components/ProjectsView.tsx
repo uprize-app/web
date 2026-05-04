@@ -60,7 +60,7 @@ export const ProjectsView = () => {
   const [search, setSearch] = useState("");
 
   const { data, isLoading, isError, error } = useProjectList();
-  const projects = data ?? [];
+  const projects = useMemo(() => data ?? [], [data]);
 
   const stats = useMemo(() => computeStats(projects), [projects]);
   const filterCounts = useMemo(() => computeFilterCounts(projects), [projects]);

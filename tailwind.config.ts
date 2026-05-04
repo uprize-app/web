@@ -3,7 +3,7 @@ import animate from "tailwindcss-animate";
 import containerQueries from "@tailwindcss/container-queries";
 
 const config: Config = {
-  darkMode: ["class"],
+  darkMode: "class",
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     container: {

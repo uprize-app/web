@@ -75,7 +75,10 @@ export const useWizardDraftStore = create<WizardState>()(
         if (version < 4) return initialDraft as unknown as WizardState;
         return _persisted as WizardState;
       },
-      partialize: ({ step: _step, ...rest }) => rest as WizardState,
+      partialize: ({ step, ...rest }) => {
+        void step;
+        return rest as WizardState;
+      },
     },
   ),
 );

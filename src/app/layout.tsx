@@ -40,8 +40,10 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
   >
     <body className="min-h-dvh animate-page-in">
       <QueryProvider>
-        <Nav />
-        {children}
+        <div className="flex min-h-dvh flex-col">
+          <Nav />
+          <div className="flex flex-1 flex-col">{children}</div>
+        </div>
       </QueryProvider>
     </body>
   </html>
