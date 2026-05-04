@@ -95,11 +95,11 @@ export const ProjectDetailView = ({ projectId }: Props) => {
 
   return (
     <>
-      <section className="border-b border-line py-10">
-        <div className="mx-auto max-w-[1280px] px-8">
+      <section className="border-b border-line py-7 sm:py-10">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
           <Link
             href="/projects"
-            className="mb-7 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-50 transition hover:text-burn-500"
+            className="mb-5 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-50 transition hover:text-burn-500 sm:mb-7"
           >
             <ArrowLeft size={13} strokeWidth={1.5} />
             프로젝트 목록
@@ -112,14 +112,14 @@ export const ProjectDetailView = ({ projectId }: Props) => {
                   {formatCategory(project)}
                 </span>
               </div>
-              <h1 className="display-italic m-0 break-words text-[42px] leading-none sm:text-[56px]">
+              <h1 className="display-italic m-0 break-words text-[34px] leading-none sm:text-[56px]">
                 {title}
                 <em className="display-italic not-italic text-burn-500">.</em>
               </h1>
-              <div className="mt-4 flex flex-wrap gap-4 text-[13px] text-ink-50">
-                <span className="inline-flex items-center gap-2">
+              <div className="mt-4 flex flex-col gap-2 text-[13px] text-ink-50 sm:flex-row sm:flex-wrap sm:gap-4">
+                <span className="inline-flex min-w-0 items-start gap-2">
                   <MapPin size={14} strokeWidth={1.5} />
-                  {address}
+                  <span className="break-words">{address}</span>
                 </span>
                 <span className="inline-flex items-center gap-2">
                   <CalendarDays size={14} strokeWidth={1.5} />
@@ -135,6 +135,7 @@ export const ProjectDetailView = ({ projectId }: Props) => {
                 size="sm"
                 onClick={handleDownloadPdf}
                 disabled={!canDownloadPdf || exportPdf.isPending}
+                className="w-full sm:w-auto"
               >
                 <Download size={14} strokeWidth={1.6} />
                 {exportPdf.isPending ? "PDF 발행 중" : "PDF 다운로드"}
@@ -144,8 +145,8 @@ export const ProjectDetailView = ({ projectId }: Props) => {
         </div>
       </section>
 
-      <main className="mx-auto grid max-w-[1280px] gap-7 px-8 py-10 pb-[120px] lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
-        <section className="h-[520px] lg:h-[640px]">
+      <main className="mx-auto grid max-w-[1280px] gap-5 px-4 py-6 pb-16 sm:gap-7 sm:px-8 sm:py-10 sm:pb-[120px] lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
+        <section className="min-w-0 lg:h-[640px]">
           {slides ? (
             <ResultGallery slides={slides} />
           ) : (
@@ -215,7 +216,7 @@ export const ProjectDetailView = ({ projectId }: Props) => {
 };
 
 const ProjectDetailShell = ({ children }: { children: React.ReactNode }) => (
-  <main className="mx-auto max-w-[900px] px-8 py-12">
+  <main className="mx-auto max-w-[900px] px-4 py-8 sm:px-8 sm:py-12">
     <Link
       href="/projects"
       className="mb-6 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-50 transition hover:text-burn-500"
@@ -230,14 +231,14 @@ const ProjectDetailShell = ({ children }: { children: React.ReactNode }) => (
 const ProjectDetailSkeleton = () => (
   <>
     <section className="border-b border-line py-10">
-      <div className="mx-auto max-w-[1280px] px-8">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-8">
         <div className="mb-7 h-4 w-28 animate-pulse rounded bg-paper-2" />
         <div className="h-14 w-64 animate-pulse rounded bg-paper-2" />
         <div className="mt-4 h-4 w-80 animate-pulse rounded bg-paper-2" />
       </div>
     </section>
-    <main className="mx-auto grid max-w-[1280px] gap-7 px-8 py-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
-      <div className="h-[520px] animate-pulse rounded-md border border-line bg-paper-2 lg:h-[640px]" />
+    <main className="mx-auto grid max-w-[1280px] gap-5 px-4 py-6 sm:gap-7 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.6fr)]">
+      <div className="aspect-square animate-pulse rounded-md border border-line bg-paper-2 lg:h-[640px] lg:aspect-auto" />
       <div className="flex flex-col gap-5">
         <div className="h-64 animate-pulse rounded-md border border-line bg-white" />
         <div className="h-48 animate-pulse rounded-md border border-line bg-white" />
@@ -253,13 +254,13 @@ const SiteImagePanel = ({
   imageUrl: string;
   title: string;
 }) => (
-  <div className="relative h-full min-h-[520px] overflow-hidden rounded-md border border-line bg-paper-2">
+  <div className="relative aspect-square min-w-0 overflow-hidden rounded-md border border-line bg-paper-2 lg:h-full lg:aspect-auto">
     <Image
       src={imageUrl}
       alt={title}
       fill
       sizes="(min-width: 1024px) 70vw, 100vw"
-      className="object-cover"
+      className="object-contain"
       unoptimized
     />
     <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-sm border border-line bg-paper/90 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink">
@@ -276,7 +277,7 @@ const Panel = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <section className="rounded-md border border-line bg-white px-6 py-5">
+  <section className="rounded-md border border-line bg-white px-4 py-5 sm:px-6">
     <h2 className="mb-4 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-50">
       {title}
     </h2>
@@ -293,11 +294,11 @@ const InfoRow = ({
   value: React.ReactNode;
   mono?: boolean;
 }) => (
-  <div className="flex items-start justify-between gap-4 border-t border-line py-3 first:border-t-0 first:pt-0 last:pb-0">
+  <div className="flex flex-col gap-1.5 border-t border-line py-3 first:border-t-0 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
     <span className="shrink-0 text-[13px] text-ink-50">{label}</span>
     <span
       className={cn(
-        "min-w-0 text-right text-[13px] font-medium text-ink",
+        "min-w-0 break-words text-left text-[13px] font-medium text-ink sm:text-right",
         mono ? "break-all font-mono text-[11px] tracking-[0.02em]" : "",
       )}
     >

@@ -50,3 +50,16 @@ test("polls the latest generation and shows progress on project detail", async (
   assert.match(source, /formatGenerationStatus\(activeGeneration\.status\)/);
   assert.match(source, /생성 상황/);
 });
+
+test("uses mobile-safe project detail layout dimensions", async () => {
+  const source = await readFile(
+    new URL("./ProjectDetailView.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(source, /px-4 sm:px-8/);
+  assert.match(source, /<section className="min-w-0 lg:h-\[640px\]">/);
+  assert.match(source, /w-full sm:w-auto/);
+  assert.match(source, /aspect-square min-w-0/);
+  assert.match(source, /className="object-contain"/);
+});

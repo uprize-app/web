@@ -55,11 +55,11 @@ export const ResultGallery = ({ slides }: Props) => {
   if (!active) return null;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-md border border-line bg-white">
+    <div className="flex h-auto min-w-0 flex-col overflow-hidden rounded-md border border-line bg-white lg:h-full">
       <Carousel
         opts={{ loop: true }}
         setApi={setApi}
-        className="relative flex-1 min-h-0"
+        className="relative aspect-square w-full flex-none lg:min-h-0 lg:flex-1 lg:aspect-auto"
       >
         <CarouselContent className="h-full">
           {slides.map((slide) => (
@@ -69,15 +69,15 @@ export const ResultGallery = ({ slides }: Props) => {
           ))}
         </CarouselContent>
 
-        <span className="absolute left-3.5 top-3.5 rounded-sm border border-line bg-paper/90 px-2.5 py-1.5 font-mono text-[10px] tracking-[0.14em] text-ink">
+        <span className="absolute left-3.5 top-3.5 max-w-[calc(100%-7rem)] truncate rounded-sm border border-line bg-paper/90 px-2.5 py-1.5 font-mono text-[10px] tracking-[0.14em] text-ink">
           {active.index} / {String(slides.length).padStart(2, "0")} · {active.label}
         </span>
 
-        <CarouselPrevious />
-        <CarouselNext />
+        <CarouselPrevious className="left-2 h-10 w-10 sm:left-4 sm:h-11 sm:w-11" />
+        <CarouselNext className="right-2 h-10 w-10 sm:right-4 sm:h-11 sm:w-11" />
       </Carousel>
 
-      <div className="overflow-x-auto border-t border-line bg-paper p-3.5">
+      <div className="overflow-x-auto border-t border-line bg-paper p-2.5 sm:p-3.5">
         <div className="mx-auto flex w-max gap-2">
           {slides.map((slide, i) => {
             const isActive = i === current;
@@ -87,7 +87,7 @@ export const ResultGallery = ({ slides }: Props) => {
                 type="button"
                 onClick={() => api?.scrollTo(i)}
                 className={cn(
-                  "relative aspect-[4/3] w-[92px] flex-shrink-0 overflow-hidden rounded-sm border-[1.5px] bg-paper-2 transition-all duration-200",
+                  "relative aspect-[4/3] w-[72px] flex-shrink-0 overflow-hidden rounded-sm border-[1.5px] bg-paper-2 transition-all duration-200 sm:w-[92px]",
                   isActive
                     ? "border-burn-500 ring-2 ring-burn-100"
                     : "border-line",
@@ -115,7 +115,7 @@ const SlidePane = ({ slide }: { slide: GallerySlide }) => {
           alt={slide.label}
           fill
           sizes="(min-width: 1024px) 70vw, 100vw"
-          className="object-cover"
+          className="object-contain"
           unoptimized
         />
       </div>
