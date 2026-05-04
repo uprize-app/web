@@ -68,11 +68,11 @@ export const UsageTab = () => {
         sub={periodSub}
       />
 
-      <div className="mb-7 grid grid-cols-2 gap-5 md:grid-cols-4">
+      <div className="mb-7 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-5">
         {STATS.map((s) => (
           <div
             key={s.label}
-            className="rounded-md border border-line bg-white px-6 py-5"
+            className="min-w-0 rounded-md border border-line bg-white px-5 py-5 sm:px-6"
           >
             <div className="mb-2.5 font-mono text-[10px] uppercase tracking-[0.1em] text-ink-50">
               {s.label}
@@ -94,8 +94,8 @@ export const UsageTab = () => {
         ))}
       </div>
 
-      <div className="rounded-lg border border-line bg-white px-8 py-7">
-        <h3 className="display-italic m-0 mb-1 text-[22px] tracking-[-0.01em] not-italic">
+      <div className="min-w-0 rounded-lg border border-line bg-white px-4 py-5 sm:px-8 sm:py-7">
+        <h3 className="display-italic m-0 mb-1 text-[20px] tracking-normal not-italic sm:text-[22px]">
           월별 프로젝트 생성
         </h3>
         <div className="mb-2 font-mono text-[12px] tracking-[0.04em] text-ink-50">
@@ -147,7 +147,7 @@ const MonthlyChart = ({
   const ticks = [max, Math.round((max * 2) / 3), Math.round(max / 3), 0];
 
   return (
-    <svg className="mt-2 h-60 w-full" viewBox="0 0 720 240" preserveAspectRatio="none">
+    <svg className="mt-2 h-56 w-full sm:h-60" viewBox="0 0 720 240" preserveAspectRatio="none">
       <g stroke="#E1DED2" strokeWidth="0.8" strokeDasharray="3 3">
         <line x1="40" y1={top} x2="720" y2={top} />
         <line x1="40" y1={top + trackH / 3} x2="720" y2={top + trackH / 3} />

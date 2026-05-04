@@ -4,10 +4,10 @@ type Props = {
 };
 
 export const SectionHeader = ({ title, sub }: Props) => (
-  <div className="mb-8 flex items-end justify-between border-b border-line pb-5">
-    <h2 className="display-italic m-0 text-[36px] tracking-[-0.015em]">{title}</h2>
+  <div className="mb-8 flex flex-col items-start gap-2 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <h2 className="display-italic m-0 text-[28px] tracking-normal sm:text-[36px]">{title}</h2>
     {sub ? (
-      <span className="font-mono text-[13px] tracking-[0.04em] text-ink-50">{sub}</span>
+      <span className="font-mono text-[12px] tracking-[0.04em] text-ink-50 sm:text-[13px]">{sub}</span>
     ) : null}
   </div>
 );

@@ -27,7 +27,7 @@ export const BillingTab = () => (
       sub="자동 갱신 · 2026.05.15 · ₩ 990,000"
     />
 
-    <div className="mb-9 grid gap-5 lg:grid-cols-[1.5fr_1fr]">
+    <div className="mb-9 grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)]">
       <Panel title="결제 수단">
         <div className="flex flex-col gap-3">
           <PaymentCard
@@ -74,8 +74,42 @@ export const BillingTab = () => (
     <h3 className="display-italic m-0 mb-4 text-[22px] tracking-[-0.01em] not-italic">
       최근 인보이스
     </h3>
-    <div className="overflow-hidden rounded-lg border border-line bg-white">
-      <table className="w-full text-[13px]">
+    <div className="rounded-lg border border-line bg-white">
+      <div className="flex flex-col divide-y divide-line lg:hidden">
+        {INVOICES.map((inv) => (
+          <div key={inv.id} className="px-4 py-4">
+            <div className="mb-3 flex flex-col gap-1">
+              <span className="break-all font-semibold">{inv.id}</span>
+              <span className="text-[13px] text-ink-50">{inv.item}</span>
+            </div>
+            <div className="grid gap-2 text-[13px]">
+              <InvoiceRow label="결제일" value={inv.date} />
+              <InvoiceRow
+                label="금액"
+                value={
+                  inv.emphasized ? (
+                    <em className="display-italic text-burn-500">{inv.amount}</em>
+                  ) : (
+                    inv.amount
+                  )
+                }
+              />
+              <InvoiceRow
+                label="상태"
+                value={
+                  <span className="inline-flex items-center rounded-full border border-[#B8D9C5] bg-[#ECF6F0] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-[#2E6F50]">
+                    ● 결제완료
+                  </span>
+                }
+              />
+            </div>
+            <a className="mt-4 inline-flex text-[12px] text-burn-500" href="#">
+              PDF ↓
+            </a>
+          </div>
+        ))}
+      </div>
+      <table className="hidden w-full text-[13px] lg:table">
         <thead className="bg-paper-2">
           <tr>
             {["인보이스", "항목", "결제일", "금액", "상태", ""].map((h) => (
@@ -120,9 +154,16 @@ export const BillingTab = () => (
 );
 
 const Row = ({ dt, dd }: { dt: string; dd: React.ReactNode }) => (
-  <div className="flex justify-between">
+  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
     <dt className="text-ink-50">{dt}</dt>
-    <dd className="m-0 font-medium">{dd}</dd>
+    <dd className="m-0 break-words font-medium sm:text-right">{dd}</dd>
+  </div>
+);
+
+const InvoiceRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <div className="flex items-start justify-between gap-4">
+    <span className="font-mono text-[11px] text-ink-50">{label}</span>
+    <span className="text-right">{value}</span>
   </div>
 );
 
@@ -139,7 +180,7 @@ const PaymentCard = ({
   sub: string;
   action: React.ReactNode;
 }) => (
-  <div className="flex items-center gap-5 rounded-md border border-line bg-white p-5 transition-colors hover:border-ink">
+  <div className="flex flex-col gap-4 rounded-md border border-line bg-white p-4 transition-colors hover:border-ink sm:flex-row sm:items-center sm:gap-5 sm:p-5">
     <div
       className={cn(
         "grid h-10 w-14 shrink-0 place-items-center rounded-sm font-mono text-[10px] tracking-[0.08em] text-paper",
@@ -150,10 +191,10 @@ const PaymentCard = ({
     >
       {icon}
     </div>
-    <div className="flex-1">
+    <div className="min-w-0 flex-1">
       <div className="font-mono text-sm">{title}</div>
-      <div className="mt-1 text-xs text-ink-50">{sub}</div>
+      <div className="mt-1 break-words text-xs text-ink-50">{sub}</div>
     </div>
-    <div className="ml-auto">{action}</div>
+    <div className="sm:ml-auto">{action}</div>
   </div>
 );

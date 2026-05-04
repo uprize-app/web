@@ -85,12 +85,12 @@ export const PlanTab = () => (
       sub="월간 결제 · 부가세 별도 · 언제든 변경 가능"
     />
 
-    <div className="mb-8 grid gap-5 md:grid-cols-3">
+    <div className="mb-8 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {PLANS.map((p) => (
         <div
           key={p.tag}
           className={cn(
-            "relative rounded-lg border bg-white p-8 transition-all duration-500 ease-out-expo hover:border-ink hover:shadow-lift",
+            "relative min-w-0 rounded-lg border bg-white p-6 transition-all duration-500 ease-out-expo hover:border-ink hover:shadow-lift sm:p-8",
             p.current ? "border-burn-500 ring-[3px] ring-burn-100" : "border-line",
           )}
         >
@@ -108,8 +108,8 @@ export const PlanTab = () => (
           </h3>
           <p className="mb-5 min-h-[36px] text-[13px] text-ink-50">{p.desc}</p>
 
-          <div className="mb-6 flex items-baseline gap-2 border-y border-line py-4">
-            <div className="display-italic text-[44px] leading-none tracking-[-0.02em] not-italic">
+          <div className="mb-6 flex flex-wrap items-baseline gap-2 border-y border-line py-4">
+            <div className="display-italic text-[36px] leading-none tracking-normal not-italic sm:text-[44px]">
               {p.price}
             </div>
             <div className="font-mono text-[13px] text-ink-50">{p.per}</div>
@@ -147,7 +147,26 @@ export const PlanTab = () => (
     </div>
 
     <Panel title="플랜별 상세 비교">
-      <table className="w-full text-[13px]">
+      <div className="flex flex-col gap-3 md:hidden">
+        {COMPARE_ROWS.map((row) => (
+          <div key={row[0]} className="rounded-md border border-line bg-white px-4 py-4">
+            <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-50">
+              {row[0]}
+            </div>
+            <div className="grid gap-2 text-[13px]">
+              {["Sketch", "Studio", "Atelier"].map((name, i) => (
+                <div key={name} className="flex items-start justify-between gap-4">
+                  <span className="font-mono text-[11px] text-ink-50">{name}</span>
+                  <span className={cn("text-right", i === 1 && "font-semibold text-ink")}>
+                    {row[i + 1]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <table className="hidden w-full text-[13px] md:table">
         <thead>
           <tr>
             {["항목", "Sketch", "Studio", "Atelier"].map((h) => (

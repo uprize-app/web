@@ -43,8 +43,8 @@ export const OverviewTab = ({ onUpgrade }: Props) => {
   ];
 
   return (
-    <div className="grid gap-7 lg:grid-cols-[2fr_1fr]">
-      <div className="flex flex-col gap-5">
+    <div className="grid min-w-0 gap-7 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+      <div className="flex min-w-0 flex-col gap-5">
         <Panel
           title="이번 달 사용량"
           action={<Link href="#">자세히 →</Link>}
@@ -54,7 +54,7 @@ export const OverviewTab = ({ onUpgrade }: Props) => {
             const warn = pct >= 80;
             return (
               <div key={u.label} className={i < usages.length - 1 ? "mb-6" : ""}>
-                <div className="mb-2.5 flex justify-between">
+                <div className="mb-2.5 flex flex-col gap-1 sm:flex-row sm:justify-between">
                   <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-50">
                     {u.label}
                   </span>
@@ -72,7 +72,7 @@ export const OverviewTab = ({ onUpgrade }: Props) => {
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <div className="mt-2 flex justify-between font-mono text-[12px] tracking-[0.04em] text-ink-50">
+                <div className="mt-2 flex flex-col gap-1 font-mono text-[12px] tracking-[0.04em] text-ink-50 sm:flex-row sm:justify-between">
                   <span>{u.foot[0]}</span>
                   <span>{u.foot[1]}</span>
                 </div>
@@ -94,12 +94,12 @@ export const OverviewTab = ({ onUpgrade }: Props) => {
 
       {/* Plan card */}
       <div>
-        <div className="relative overflow-hidden rounded-lg bg-ink px-8 py-7 text-paper">
+        <div className="relative overflow-hidden rounded-lg bg-ink px-5 py-6 text-paper sm:px-8 sm:py-7">
           <div className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-[radial-gradient(circle,rgba(212,84,31,0.4),transparent_70%)]" />
           <div className="relative mb-3.5 font-mono text-[10px] uppercase tracking-[0.16em] text-burn-300">
             CURRENT PLAN
           </div>
-          <div className="display-italic relative mb-2 text-[36px] leading-none tracking-[-0.015em]">
+          <div className="display-italic relative mb-2 text-[32px] leading-none tracking-normal sm:text-[36px]">
             <em className="display-italic text-burn-300">Studio</em>
           </div>
           <div className="relative mb-5 text-[13px] text-ink-30">
@@ -173,7 +173,28 @@ const RecentProjectsTable = ({
   }
 
   return (
-    <table className="w-full text-[13px]">
+    <>
+      <div className="flex flex-col gap-3 md:hidden">
+        {projects.map((p) => (
+          <Link
+            key={p.id}
+            href={`/projects/${p.id}`}
+            className="block rounded-md border border-line bg-white px-4 py-4 transition-colors hover:border-ink"
+          >
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div className="min-w-0 font-medium text-ink">
+                <span className="block break-words">{p.address || "주소 미등록"}</span>
+              </div>
+              <Pill status={p.status} />
+            </div>
+            <div className="grid grid-cols-2 gap-3 font-mono text-[11px] uppercase tracking-[0.06em] text-ink-50">
+              <span>{p.designStyle}</span>
+              <span className="text-right normal-case">{formatRelative(p.updatedAt)}</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+      <table className="hidden w-full text-[13px] md:table">
       <thead>
         <tr>
           {["프로젝트", "스타일", "상태", "업데이트"].map((h) => (
@@ -213,7 +234,8 @@ const RecentProjectsTable = ({
           );
         })}
       </tbody>
-    </table>
+      </table>
+    </>
   );
 };
 

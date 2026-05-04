@@ -40,7 +40,7 @@ export const AccountTab = () => {
         sub="개인 정보 · 알림 · 보안"
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-2">
         <ProfilePanel />
 
         <div className="flex flex-col gap-5">
@@ -75,7 +75,7 @@ export const AccountTab = () => {
 
       <SignOutPanel />
 
-      <div className="mt-8 rounded-md border border-[#E5C2C0] bg-[#FBF4F3] px-7 py-6">
+      <div className="mt-8 rounded-md border border-[#E5C2C0] bg-[#FBF4F3] px-5 py-5 sm:px-7 sm:py-6">
         <h4 className="display-italic m-0 mb-1.5 text-xl text-[#8A2F2A] not-italic">
           계정 삭제
         </h4>
@@ -188,12 +188,12 @@ const ProfilePanel = () => {
       }
     >
       {/* 프로필 카드 헤더 */}
-      <div className="mb-7 flex items-center gap-5 rounded-md border border-line bg-paper-2/40 px-5 py-5">
+      <div className="mb-7 flex items-start gap-4 rounded-md border border-line bg-paper-2/40 px-4 py-4 sm:items-center sm:gap-5 sm:px-5 sm:py-5">
         <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-ink text-burn-300">
           <span className="display-italic text-[28px] not-italic">{initial}</span>
         </div>
         <div className="min-w-0">
-          <div className="display-italic mb-1 truncate text-[24px] leading-none not-italic">
+          <div className="display-italic mb-1 break-words text-[22px] leading-none not-italic sm:text-[24px]">
             {isLoading ? "···" : (me?.displayName ?? fallbackName)}
             {me?.position ? (
               <em className="not-italic display-italic ml-1.5 text-burn-500">
@@ -201,7 +201,7 @@ const ProfilePanel = () => {
               </em>
             ) : null}
           </div>
-          <div className="truncate font-mono text-[12px] tracking-[0.04em] text-ink-50">
+          <div className="break-words font-mono text-[12px] tracking-[0.04em] text-ink-50">
             {me?.companyName ? `● ${me.companyName}` : "● 회사 미등록"}
           </div>
         </div>
@@ -215,12 +215,13 @@ const ProfilePanel = () => {
           <FieldEdit label="회사" value={companyName} onChange={setCompanyName} />
           <FieldRead label="이메일" value={me?.email ?? "—"} />
 
-          <div className="mt-6 flex items-center gap-3 border-t border-line pt-5">
+          <div className="mt-6 flex flex-col gap-3 border-t border-line pt-5 sm:flex-row sm:flex-wrap sm:items-center">
             <Button
               variant="accent"
               size="sm"
               onClick={handleSave}
               disabled={updateMe.isPending || isLoading}
+              className="justify-center sm:w-auto"
             >
               {updateMe.isPending ? "저장 중…" : "변경 사항 저장"}
             </Button>
@@ -229,6 +230,7 @@ const ProfilePanel = () => {
               size="sm"
               onClick={handleCancel}
               disabled={updateMe.isPending}
+              className="justify-center sm:w-auto"
             >
               취소
             </Button>
@@ -268,14 +270,14 @@ const FieldRead = ({
 }) => (
   <div
     className={cn(
-      "flex items-center justify-between gap-4 py-3.5",
+      "flex flex-col gap-1 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
       !last && "border-b border-line",
     )}
   >
     <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-ink-50">
       {label}
     </span>
-    <span className="truncate text-right text-[14px] text-ink">{value}</span>
+    <span className="break-words text-left text-[14px] text-ink sm:text-right">{value}</span>
   </div>
 );
 
@@ -309,13 +311,13 @@ const ToggleRow = ({
 }) => (
   <div
     className={cn(
-      "flex items-center justify-between py-4",
+      "flex items-start justify-between gap-4 py-4",
       !last && "border-b border-line",
     )}
   >
-    <div>
+    <div className="min-w-0">
       <div className="mb-1 text-sm font-medium">{t.name}</div>
-      <div className="text-xs text-ink-50">{t.desc}</div>
+      <div className="break-words text-xs text-ink-50">{t.desc}</div>
     </div>
     <button
       type="button"

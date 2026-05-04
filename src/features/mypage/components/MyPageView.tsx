@@ -25,9 +25,9 @@ export const MyPageView = () => {
       <MyPageHero />
       <MyPageTabs active={tab} onChange={handleTabChange} />
 
-      <section className="py-14">
-        <div className="mx-auto max-w-[1280px] px-8">
-          <div key={tab} className="animate-fade-up">
+      <section className="py-8 sm:py-12 lg:py-14">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+          <div key={tab} className="min-w-0 animate-fade-up">
             {tab === "overview" ? (
               <OverviewTab onUpgrade={() => handleTabChange("plan")} />
             ) : null}
